@@ -17,10 +17,11 @@ export default function Hero() {
             transition={{ duration: 0.8 }}
             className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl lg:text-7xl"
           >
-            Your Partner{" "}
+            We Engineer{" "}
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
-              In The Cloud
+              Results
             </span>
+            , Not Just Roadmaps
           </motion.h1>
           
           <motion.p
