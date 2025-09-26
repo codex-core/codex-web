@@ -88,10 +88,12 @@ export default function Consultants() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Button size="lg" className="text-lg px-8 py-6 relative overflow-hidden group">
-                  <span className="relative z-10">Apply Now</span>
-                  <ArrowRight className="ml-2 h-5 w-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <Button asChild size="lg" className="text-lg px-8 py-6 relative overflow-hidden group">
+                  <Link href="/signup">
+                    <span className="relative z-10">Apply Now</span>
+                    <ArrowRight className="ml-2 h-5 w-5 relative z-10 group-hover:translate-x-1 transition-transform" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                  </Link>
                 </Button>
               </motion.div>
               <motion.div
@@ -465,7 +467,7 @@ export default function Consultants() {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Button asChild size="lg" className="h-12 px-8 relative overflow-hidden group">
-                    <Link href="/contact">
+                    <Link href="/signup">
                       <span className="relative z-10">Apply Now</span>
                       <ArrowRight className="ml-2 h-4 w-4 relative z-10 group-hover:translate-x-1 transition-transform" />
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>

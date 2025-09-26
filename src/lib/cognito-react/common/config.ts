@@ -113,7 +113,7 @@ export function configure(config?: ConfigInput) {
       location: config.location ?? Defaults.location,
       history: config.history ?? Defaults.history,
     };
-    config_.debug?.("Configuration loaded:", config);
+    // config_.debug?.("Configuration loaded:", config);
   } else {
     if (!config_) {
       throw new Error("Call configure(config) first");

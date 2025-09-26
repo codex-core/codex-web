@@ -101,7 +101,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <h3 className="font-semibold">Email</h3>
-                      <p className="text-muted-foreground">info@codexxstudios.com</p>
+                      <p className="text-muted-foreground">info@codexstudios.io</p>
                     </div>
                   </div>
 

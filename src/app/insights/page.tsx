@@ -2,75 +2,15 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Calendar, Clock, User } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowRight, Calendar, Clock, User, Users, Building2 } from "lucide-react";
 import Link from "next/link";
-
-const blogPosts = [
-  {
-    id: 1,
-    title: "The Future of Cloud Infrastructure: Trends to Watch in 2024",
-    excerpt: "Explore the latest trends shaping cloud infrastructure and how businesses can prepare for the next wave of cloud innovation.",
-    category: "Cloud Strategy",
-    author: "Sarah Johnson",
-    publishDate: "2024-01-15",
-    readTime: "8 min read",
-    featured: true
-  },
-  {
-    id: 2,
-    title: "Infrastructure as Code: Best Practices for Scalable Cloud Deployments",
-    excerpt: "Learn how to implement Infrastructure as Code effectively to automate your cloud deployments and improve consistency.",
-    category: "DevOps",
-    author: "Michael Chen",
-    publishDate: "2024-01-10",
-    readTime: "12 min read",
-    featured: false
-  },
-  {
-    id: 3,
-    title: "Cloud Security Essentials: Protecting Your Digital Assets",
-    excerpt: "Comprehensive guide to cloud security best practices, compliance requirements, and risk mitigation strategies.",
-    category: "Security",
-    author: "Emily Rodriguez",
-    publishDate: "2024-01-05",
-    readTime: "10 min read",
-    featured: false
-  },
-  {
-    id: 4,
-    title: "Cost Optimization Strategies for Cloud Infrastructure",
-    excerpt: "Practical approaches to reduce cloud costs while maintaining performance and reliability.",
-    category: "Cost Management",
-    author: "David Thompson",
-    publishDate: "2023-12-28",
-    readTime: "7 min read",
-    featured: false
-  },
-  {
-    id: 5,
-    title: "Multi-Cloud Strategy: Benefits and Implementation Challenges",
-    excerpt: "Understanding when and how to implement a multi-cloud strategy for your organization.",
-    category: "Cloud Strategy",
-    author: "Lisa Wang",
-    publishDate: "2023-12-20",
-    readTime: "9 min read",
-    featured: false
-  },
-  {
-    id: 6,
-    title: "Serverless Computing: When and How to Make the Switch",
-    excerpt: "Explore the benefits of serverless architecture and determine if it's right for your applications.",
-    category: "Architecture",
-    author: "James Miller",
-    publishDate: "2023-12-15",
-    readTime: "11 min read",
-    featured: false
-  }
-];
-
-const categories = ["All", "Cloud Strategy", "DevOps", "Security", "Cost Management", "Architecture"];
+import { getAllInsights, getFeaturedInsights } from "@/lib/insights";
 
 export default function Insights() {
+  const featuredInsights = getFeaturedInsights();
+  const allInsights = getAllInsights();
+  
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -86,115 +26,195 @@ export default function Insights() {
               </span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-muted-foreground max-w-2xl mx-auto">
-              Stay ahead of the curve with our latest insights, best practices, and industry trends 
-              in cloud computing and digital transformation.
+              Discover insights tailored for consultants and businesses navigating the cloud landscape. 
+              From building consulting practices to digital transformation strategies.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Categories Filter */}
-      <section className="pb-8">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-wrap gap-2 justify-center">
-            {categories.map((category) => (
-              <Badge key={category} variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
-                {category}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Post */}
+      {/* Audience Categories */}
       <section className="pb-16">
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-6xl">
-            {blogPosts.filter(post => post.featured).map((post) => (
-              <div key={post.id} className="rounded-2xl border bg-card p-8 lg:p-12">
-                <div className="flex items-center space-x-2 mb-4">
-                  <Badge>{post.category}</Badge>
-                  <Badge variant="secondary">Featured</Badge>
-                </div>
-                
-                <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-                  {post.title}
-                </h2>
-                
-                <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-                  {post.excerpt}
-                </p>
-                
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-                  <div className="flex items-center space-x-6 text-sm text-muted-foreground mb-4 sm:mb-0">
-                    <div className="flex items-center space-x-2">
-                      <User className="h-4 w-4" />
-                      <span>{post.author}</span>
+            <div className="grid gap-8 md:grid-cols-2">
+              {/* Consultants Card */}
+              <Card className="relative overflow-hidden border-2 hover:border-primary/50 transition-all group">
+                <CardHeader className="pb-6">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/20">
+                      <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="h-4 w-4" />
-                      <span>{new Date(post.publishDate).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Clock className="h-4 w-4" />
-                      <span>{post.readTime}</span>
+                    <CardTitle className="text-2xl">For Consultants</CardTitle>
+                  </div>
+                  <p className="text-muted-foreground">
+                    Build and grow your consulting practice with industry insights, client management strategies, and business development tips.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 mb-6">
+                    <p className="text-sm font-medium">Featured Topics:</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary">Business Development</Badge>
+                      <Badge variant="secondary">Client Relations</Badge>
+                      <Badge variant="secondary">Pricing Strategies</Badge>
                     </div>
                   </div>
-                  
-                  <Button asChild>
-                    <Link href={`/insights/${post.id}`}>
-                      Read Article
+                  <Button asChild className="w-full group-hover:bg-primary/90">
+                    <Link href="/insights/consultants">
+                      Explore Consultant Insights
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
-                </div>
-              </div>
-            ))}
+                </CardContent>
+              </Card>
+
+              {/* Businesses Card */}
+              <Card className="relative overflow-hidden border-2 hover:border-primary/50 transition-all group">
+                <CardHeader className="pb-6">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/20">
+                      <Building2 className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <CardTitle className="text-2xl">For Businesses</CardTitle>
+                  </div>
+                  <p className="text-muted-foreground">
+                    Navigate digital transformation with strategic insights on cloud adoption, security, and organizational change management.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 mb-6">
+                    <p className="text-sm font-medium">Featured Topics:</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary">Digital Strategy</Badge>
+                      <Badge variant="secondary">Cloud Security</Badge>
+                      <Badge variant="secondary">Change Management</Badge>
+                    </div>
+                  </div>
+                  <Button asChild className="w-full group-hover:bg-primary/90">
+                    <Link href="/insights/businesses">
+                      Explore Business Insights
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* All Posts Grid */}
+      {/* Featured Posts */}
+      <section className="pb-16">
+        <div className="container mx-auto px-4">
+          <div className="mx-auto max-w-6xl">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-12 text-center">
+              Featured Insights
+            </h2>
+            
+            <div className="grid gap-8 md:grid-cols-2">
+              {featuredInsights.map((post) => (
+                <Card key={post.id} className="border bg-card transition-all hover:shadow-lg">
+                  <CardHeader>
+                    <div className="flex items-center space-x-2 mb-3">
+                      <Badge>{post.category}</Badge>
+                      <Badge variant="secondary">Featured</Badge>
+                      <Badge variant="outline" className="capitalize">
+                        {post.audience === 'consultants' ? 'Consultants' : 'Businesses'}
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-xl line-clamp-2">
+                      {post.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-6 line-clamp-3">
+                      {post.excerpt}
+                    </p>
+                    
+                    <div className="flex items-center space-x-6 text-sm text-muted-foreground mb-4">
+                      <div className="flex items-center space-x-2">
+                        <User className="h-4 w-4" />
+                        <span>{post.author}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Clock className="h-4 w-4" />
+                        <span>{post.readTime}</span>
+                      </div>
+                    </div>
+                    
+                    <Button asChild className="w-full">
+                      <Link href={`/insights/${post.audience}/${post.slug}`}>
+                        Read Article
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Latest from Both Audiences */}
       <section className="py-20 lg:py-32">
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-6xl">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-12 text-center">
-              Latest Articles
+              Latest Insights
             </h2>
             
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {blogPosts.filter(post => !post.featured).map((post) => (
-                <div key={post.id} className="rounded-2xl border bg-card p-6 transition-all hover:shadow-lg">
-                  <div className="mb-4">
-                    <Badge variant="outline">{post.category}</Badge>
-                  </div>
-                  
-                  <h3 className="text-xl font-semibold mb-3 line-clamp-2">
-                    {post.title}
-                  </h3>
-                  
-                  <p className="text-muted-foreground mb-6 line-clamp-3">
-                    {post.excerpt}
-                  </p>
-                  
-                  <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                    <span>{post.author}</span>
-                    <span>{post.readTime}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(post.publishDate).toLocaleDateString()}
-                    </span>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/insights/${post.id}`}>
+              {allInsights.filter(post => !post.featured).slice(0, 6).map((post) => (
+                <Card key={post.id} className="border bg-card transition-all hover:shadow-lg">
+                  <CardHeader>
+                    <div className="flex items-center space-x-2 mb-3">
+                      <Badge variant="outline">{post.category}</Badge>
+                      <Badge variant="secondary" className="capitalize">
+                        {post.audience === 'consultants' ? 'Consultants' : 'Businesses'}
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-lg line-clamp-2">
+                      {post.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4 line-clamp-3">
+                      {post.excerpt}
+                    </p>
+                    
+                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                      <span>{post.author}</span>
+                      <span>{post.readTime}</span>
+                    </div>
+                    
+                    <Button variant="ghost" size="sm" asChild className="w-full">
+                      <Link href={`/insights/${post.audience}/${post.slug}`}>
                         Read More
                         <ArrowRight className="ml-1 h-3 w-3" />
                       </Link>
                     </Button>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               ))}
+            </div>
+
+            <div className="text-center mt-12">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/insights/consultants">
+                    View All Consultant Insights
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/insights/businesses">
+                    View All Business Insights
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>

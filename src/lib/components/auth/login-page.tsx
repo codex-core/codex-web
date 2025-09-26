@@ -74,51 +74,68 @@ export default function LoginPageComponent() {
 
   if (signInStatus === "SIGNED_IN" && tokensParsed) {
     return (
-      <Card className="max-w-md mx-auto mt-20">
-        <CardHeader>
-          <CardTitle>Welcome!</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-sm text-muted-foreground">
-            Signed in as <span className="font-medium">{tokensParsed.idToken.email || tokensParsed.idToken.phone_number}</span>
-          </div>
+      <div className="container mx-auto px-4 py-16 flex flex-col lg:flex-row items-center justify-center gap-12">
+        {/* Left: Welcome copy */}
+        <div className="max-w-xl w-full mb-12 lg:mb-0">
+          <h1 className="text-4xl font-bold mb-6 text-blue-700 dark:text-blue-400">Welcome Back!</h1>
+          <p className="text-lg text-muted-foreground mb-6">
+            You are signed in as <span className="font-medium">{tokensParsed.idToken.email || tokensParsed.idToken.phone_number}</span>.<br />
+            Ready to access exclusive projects and resources for consultants.
+          </p>
           <Button onClick={signOut}>Sign out</Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="max-w-md mx-auto mt-20">
-      <CardHeader>
-        <CardTitle>Passwordless Login</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {linkSent ? (
-          <div className="text-green-700 text-sm">
-            A sign-in link has been sent to <span className="font-medium">{username}</span>.<br />
-            Please check your email or SMS and follow the link to sign in.
-          </div>
-        ) : (
-          <>
-            <Input
-              type="email"
-              placeholder="Email address"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              disabled={isLoading}
-            />
-            <Button onClick={handleRequestLink} disabled={!username || isLoading} className="w-full">
-              {isLoading ? "Checking..." : "Send Sign-In Link"}
-            </Button>
-          </>
-        )}
-        {(localError || lastError) && (
-          <div className="text-red-600 text-sm">
-            {localError || lastError?.message}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <div className="container mx-auto px-4 py-16 flex flex-col lg:flex-row items-center justify-center gap-12">
+      {/* Left: Login page copy */}
+      <div className="max-w-xl w-full mb-12 lg:mb-0">
+        <h1 className="text-4xl font-bold mb-6 text-blue-700 dark:text-blue-400">Consultant Login</h1>
+        <p className="text-lg text-muted-foreground mb-6">
+          Sign in to access your dashboard, manage projects, and connect with top companies. Enjoy secure, passwordless access with a magic link sent to your email.
+        </p>
+        <ul className="space-y-4 text-base text-muted-foreground">
+          <li>✔️ Passwordless sign-in for security and convenience</li>
+          <li>✔️ Access exclusive consulting opportunities</li>
+          <li>✔️ Manage your profile and applications</li>
+        </ul>
+      </div>
+      {/* Right: Login form */}
+      <div className="w-full max-w-md">
+        <Card>
+          <CardHeader>
+            <CardTitle>Passwordless Login</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {linkSent ? (
+              <div className="text-green-700 text-sm">
+                A sign-in link has been sent to <span className="font-medium">{username}</span>.<br />
+                Please check your email or SMS and follow the link to sign in.
+              </div>
+            ) : (
+              <>
+                <Input
+                  type="email"
+                  placeholder="Email address"
+                  value={username}
+                  onChange={e => setUsername(e.target.value)}
+                  disabled={isLoading}
+                />
+                <Button onClick={handleRequestLink} disabled={!username || isLoading} className="w-full">
+                  {isLoading ? "Checking..." : "Send Sign-In Link"}
+                </Button>
+              </>
+            )}
+            {(localError || lastError) && (
+              <div className="text-red-600 text-sm">
+                {localError || lastError?.message}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }
