@@ -812,9 +812,9 @@ function useLocalUserCacheInternal() {
 
 /** React hook to turn state (or any variable) into a promise that can be awaited */
 export function useAwaitableState<T>(state: T) {
-  const resolve = useRef<(value: T) => void>();
-  const reject = useRef<(reason: Error) => void>();
-  const awaitable = useRef<Promise<T>>();
+  const resolve = useRef<(value: T) => void | undefined>(undefined);
+  const reject = useRef<(reason: Error) => void | undefined>(undefined);
+  const awaitable = useRef<Promise<T> | undefined>(undefined);
   const [awaited, setAwaited] = useState<{ value: T }>();
   const renewPromise = useCallback(() => {
     awaitable.current = new Promise<T>((_resolve, _reject) => {

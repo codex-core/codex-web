@@ -13,7 +13,8 @@
  * language governing permissions and limitations under the License.
  */
 
-import { Session } from "inspector";
+// Define Session type locally since it's just a string
+type Session = string;
 import { defaultTokensCb } from "../utils/common";
 import { initiateAuth, assertIsChallengeResponse, respondToAuthChallenge, assertIsAuthenticatedResponse } from "./cognito-api";
 import { configure, UndefinedGlobalVariableError } from "./config";
@@ -141,7 +142,7 @@ function checkCurrentLocationForSignInLink() {
     debug?.(`Ignoring fragment identifier with invalid exp:`, message.userName);
     return;
   }
-  console.log(message)
+  debug?.("Magic link message:", message);
   return {
     username: message.userName,
     exp: message.exp,
@@ -310,7 +311,7 @@ export const signInWithLink = (props?: {
       statusCb?.("NO_SIGNIN_LINK");
       return;
     }
-    console.log(params)
+    debug?.("Sign-in link params:", params);
     if (params.exp < Date.now() / 1000) {
       statusCb?.("SIGNIN_LINK_EXPIRED");
       return;
@@ -341,7 +342,7 @@ export const signInWithLink = (props?: {
       statusCb?.("SIGNED_IN_WITH_LINK");
       return tokens;
     } catch (err) {
-      console.error("Error signing in with link:", err);
+      debug?.("Error signing in with link:", err);
       failedFragmentIdentifieres.add(params.fragmentIdentifier);
       statusCb?.("INVALID_SIGNIN_LINK");
       throw err;
