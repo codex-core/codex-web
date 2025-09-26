@@ -11,10 +11,10 @@ import { motion } from "framer-motion";
 import { consultantProcess, featuredRoles } from "@/config/jobs";
 
 const stats = [
-  { label: "Active Consultants", value: "150+", icon: Users },
-  { label: "Projects Completed", value: "500+", icon: Briefcase },
+  { label: "Active Consultants", value: "30+", icon: Users },
+  { label: "Projects Completed", value: "50+", icon: Briefcase },
   { label: "Average Response Time", value: "24hrs", icon: Clock },
-  { label: "Client Satisfaction", value: "98%", icon: Star }
+  { label: "Client Satisfaction", value: "99.999%", icon: Star }
 ];
 
 const whyJoinReasons = [

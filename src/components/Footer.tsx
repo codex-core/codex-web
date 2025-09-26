@@ -40,8 +40,8 @@ export default function Footer() {
               <div>Baltimore, Maryland 21201 US</div>
               <div className="flex items-center space-x-2 mt-4">
                 <MailIcon className="h-4 w-4" />
-                <a href="mailto:info@codexxstudios.com" className="hover:text-foreground transition-colors">
-                  info@codexxstudios.com
+                <a href="mailto:info@codexstudios.io" className="hover:text-foreground transition-colors">
+                  info@codexstudios.io
                 </a>
               </div>
               <div className="flex items-center space-x-2">

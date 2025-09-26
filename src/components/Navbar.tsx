@@ -2,12 +2,14 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Image from "next/image";
 import { useTheme } from "next-themes";
+import { usePasswordless } from "@/lib/cognito-react";
+import { useRouter } from "next/navigation";
 
 const navigation = [
 	{ name: "Solutions", href: "/solutions" },
@@ -21,7 +23,16 @@ const navigation = [
 export default function Navbar() {
 	const [isOpen, setIsOpen] = React.useState(false);
 	const { theme, systemTheme } = useTheme();
+	const { signInStatus, tokensParsed, signOut } = usePasswordless();
+	const router = useRouter();
 	const resolvedTheme = theme === "system" ? systemTheme : theme;
+
+	const isSignedIn = signInStatus === "SIGNED_IN" && tokensParsed;
+	
+	const handleSignOut = async () => {
+		await signOut();
+		router.push("/");
+	};
 
 	return (
 		<header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -52,12 +63,32 @@ export default function Navbar() {
 				{/* Desktop CTA Buttons */}
 				<div className="hidden md:flex items-center space-x-4">
 					<ThemeToggle />
-					<Button variant="outline" size="sm" asChild>
-						<Link href="/contact">Contact Us</Link>
-					</Button>
-					<Link href="/contact">
-						<Button size="sm">Schedule Consultation</Button>
-					</Link>
+					{isSignedIn ? (
+						<>
+							<Button variant="outline" size="sm" asChild>
+								<Link href="/dashboard">
+									<User className="w-4 h-4 mr-2" />
+									Dashboard
+								</Link>
+							</Button>
+							<Button variant="outline" size="sm" onClick={handleSignOut}>
+								<LogOut className="w-4 h-4 mr-2" />
+								Sign Out
+							</Button>
+						</>
+					) : (
+						<>
+							<Button variant="outline" size="sm" asChild>
+								<Link href="/login">Sign In</Link>
+							</Button>
+							<Button variant="outline" size="sm" asChild className="hidden lg:flex">
+								<Link href="/contact">Contact Us</Link>
+							</Button>
+							<Link href="/signup">
+								<Button size="sm">Join as Consultant</Button>
+							</Link>
+						</>
+					)}
 				</div>
 
 				{/* Mobile Navigation */}
@@ -82,19 +113,41 @@ export default function Navbar() {
 									</Link>
 								))}
 								<div className="flex flex-col space-y-2 pt-4">
-									<Button
-										variant="outline"
-										asChild
-									>
-										<Link href="/contact" onClick={() => setIsOpen(false)}>
-											Contact Us
-										</Link>
-									</Button>
-									<Link href="/contact">
-										<Button onClick={() => setIsOpen(false)}>
-											Schedule Consultation
-										</Button>
-									</Link>
+									{isSignedIn ? (
+										<>
+											<Button variant="outline" asChild>
+												<Link href="/dashboard" onClick={() => setIsOpen(false)}>
+													<User className="w-4 h-4 mr-2" />
+													Dashboard
+												</Link>
+											</Button>
+											<Button variant="outline" onClick={() => {
+												handleSignOut();
+												setIsOpen(false);
+											}}>
+												<LogOut className="w-4 h-4 mr-2" />
+												Sign Out
+											</Button>
+										</>
+									) : (
+										<>
+											<Button variant="outline" asChild>
+												<Link href="/login" onClick={() => setIsOpen(false)}>
+													Sign In
+												</Link>
+											</Button>
+											<Button variant="outline" asChild>
+												<Link href="/contact" onClick={() => setIsOpen(false)}>
+													Contact Us
+												</Link>
+											</Button>
+											<Link href="/signup">
+												<Button onClick={() => setIsOpen(false)}>
+													Join as Consultant
+												</Button>
+											</Link>
+										</>
+									)}
 								</div>
 							</div>
 						</SheetContent>

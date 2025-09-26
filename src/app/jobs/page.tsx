@@ -1,32 +1,42 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, MapPin, Clock, DollarSign, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, MapPin, Clock, DollarSign, Search, Filter, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import Link from "next/link";
-import { jobRoles, JobRole } from "@/config/jobs";
+import { getAllJobs, getFeaturedJobs, getJobCategories, getJobTypes } from "@/lib/jobs";
+import { EnhancedJobRole } from "@/lib/types/enhanced-job";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import JobApplicationForm from "@/components/JobApplicationForm";
 
 const JOBS_PER_PAGE = 6;
 
 export default function Jobs() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedJob, setSelectedJob] = useState<EnhancedJobRole | null>(null);
+  const [showApplicationForm, setShowApplicationForm] = useState(false);
+
+  // Get enhanced jobs data
+  const allJobs = getAllJobs();
+  const featuredJobs = getFeaturedJobs();
 
   // Get unique categories and types
-  const categories = [...new Set(jobRoles.map(job => job.category))];
-  const jobTypes = [...new Set(jobRoles.map(job => job.type))];
+  const categories = getJobCategories();
+  const jobTypes = getJobTypes();
 
-  // Filter jobs based on search and filters
+  // Filter jobs based on search and filters (combine both job sources)
   const filteredJobs = useMemo(() => {
-    return jobRoles.filter(job => {
+    return allJobs.filter(job => {
       const matchesSearch = 
         job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         job.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -37,7 +47,7 @@ export default function Jobs() {
       
       return matchesSearch && matchesCategory && matchesType;
     });
-  }, [searchTerm, selectedCategory, selectedType]);
+  }, [searchTerm, selectedCategory, selectedType, allJobs]);
 
   // Paginate jobs
   const totalPages = Math.ceil(filteredJobs.length / JOBS_PER_PAGE);
@@ -45,6 +55,50 @@ export default function Jobs() {
     (currentPage - 1) * JOBS_PER_PAGE,
     currentPage * JOBS_PER_PAGE
   );
+
+  // Convert EnhancedJobRole to the format expected by JobApplicationForm
+  const convertEnhancedJobToApplicationJob = (enhancedJob: EnhancedJobRole) => ({
+    id: enhancedJob.id,
+    title: enhancedJob.title,
+    company: enhancedJob.company,
+    location: enhancedJob.location,
+    type: enhancedJob.type,
+    description: enhancedJob.description,
+    requirements: enhancedJob.requirements || [],
+    benefits: enhancedJob.benefits || [],
+    salary: enhancedJob.salary,
+    experience: enhancedJob.experience,
+    skills: enhancedJob.skills,
+    posted: enhancedJob.postedDate,
+    deadline: enhancedJob.expiresAt,
+  });
+
+  // Handle application submission
+  const handleApplicationSubmit = async (applicationData: any) => {
+    try {
+      const response = await fetch('/api/applications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(applicationData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to submit application');
+      }
+
+      const result = await response.json();
+      
+      // Success is now handled by the JobApplicationForm component
+      // No need to close the form here as the success modal will handle it
+      
+    } catch (error) {
+      console.error('Application submission error:', error);
+      alert(`Failed to submit application: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
 
   // Reset to first page when filters change
   const handleFilterChange = (type: string, value: string) => {
@@ -58,7 +112,16 @@ export default function Jobs() {
     setCurrentPage(1);
   };
 
-  const featuredJobs = jobRoles.filter(job => job.featured);
+  // Handle job action - navigate to detail page for all jobs
+  const handleJobAction = (job: EnhancedJobRole) => {
+    router.push(`/jobs/${job.slug}`);
+  };
+
+  // Handle application form (for cases where we need to show modal)
+  const handleShowApplicationForm = (job: EnhancedJobRole) => {
+    setSelectedJob(job);
+    setShowApplicationForm(true);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -69,7 +132,7 @@ export default function Jobs() {
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-4xl text-center">
             <h1 className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-              Career{" "}
+              Consulting{" "}
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
                 Opportunities
               </span>
@@ -110,7 +173,7 @@ export default function Jobs() {
               </div>
 
               <div className="grid gap-8 md:grid-cols-2">
-                {featuredJobs.map((job, index) => (
+                {featuredJobs.map((job: EnhancedJobRole, index: number) => (
                   <motion.div
                     key={job.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -118,7 +181,10 @@ export default function Jobs() {
                     transition={{ duration: 0.6, delay: index * 0.1 }}
                     viewport={{ once: true }}
                   >
-                    <Card className="h-full transition-all hover:shadow-lg border-l-4 border-l-blue-600 group">
+                    <Card 
+                      className="h-full transition-all hover:shadow-lg border-l-4 border-l-blue-600 group cursor-pointer"
+                      onClick={() => handleJobAction(job)}
+                    >
                       <CardHeader>
                         <div className="flex items-center justify-between mb-2">
                           <Badge variant="outline">{job.category}</Badge>
@@ -161,9 +227,29 @@ export default function Jobs() {
                             <DollarSign className="h-4 w-4 mr-2" />
                             <span>Competitive project rates</span>
                           </div>
-                          <Button asChild className="w-full mt-4">
-                            <Link href="/contact">Apply Now</Link>
-                          </Button>
+                          <div className="flex gap-2 mt-4">
+                            <Button 
+                              className="flex-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleJobAction(job);
+                              }}
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Details
+                            </Button>
+                            <Button 
+                              variant="outline"
+                              className="flex-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedJob(job);
+                                setShowApplicationForm(true);
+                              }}
+                            >
+                              Apply Now
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -258,7 +344,10 @@ export default function Jobs() {
                     transition={{ duration: 0.6, delay: index * 0.1 }}
                     viewport={{ once: true }}
                   >
-                    <Card className="transition-all hover:shadow-lg group">
+                    <Card 
+                      className="transition-all hover:shadow-lg group cursor-pointer"
+                      onClick={() => handleJobAction(job)}
+                    >
                       <CardHeader>
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                           <div>
@@ -277,9 +366,29 @@ export default function Jobs() {
                               {job.description}
                             </CardDescription>
                           </div>
-                          <Button asChild className="shrink-0">
-                            <Link href="/contact">Apply</Link>
-                          </Button>
+                          <div className="hidden lg:flex gap-2">
+                            <Button 
+                              variant="outline"
+                              className="shrink-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleJobAction(job);
+                              }}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              View
+                            </Button>
+                            <Button 
+                              className="shrink-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedJob(job);
+                                setShowApplicationForm(true);
+                              }}
+                            >
+                              Apply
+                            </Button>
+                          </div>
                         </div>
                       </CardHeader>
                       <CardContent>
@@ -307,6 +416,31 @@ export default function Jobs() {
                               <DollarSign className="h-4 w-4 mr-2" />
                               <span>Competitive rates</span>
                             </div>
+                          </div>
+                        </div>
+                        <div className="mt-4 pt-4 border-t lg:hidden">
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              className="flex-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleJobAction(job);
+                              }}
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Details
+                            </Button>
+                            <Button 
+                              className="flex-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedJob(job);
+                                setShowApplicationForm(true);
+                              }}
+                            >
+                              Apply Now
+                            </Button>
                           </div>
                         </div>
                       </CardContent>
@@ -415,6 +549,19 @@ export default function Jobs() {
       </section>
 
       <Footer />
+      
+      {/* Job Application Form Modal */}
+      {selectedJob && (
+        <JobApplicationForm
+          job={selectedJob}
+          open={showApplicationForm}
+          onClose={() => {
+            setShowApplicationForm(false);
+            setSelectedJob(null);
+          }}
+          onSubmit={handleApplicationSubmit}
+        />
+      )}
     </div>
   );
 }

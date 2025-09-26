@@ -38,7 +38,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="mt-10 flex items-center justify-center gap-x-6"
+            className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-4 "
           >
             <Button asChild size="lg" className="h-12 px-8">
               <Link href="/contact">
