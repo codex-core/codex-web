@@ -11,7 +11,7 @@ const docClient = DynamoDBDocumentClient.from(client);
 // Get user profile
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     const { userId } = await params;
@@ -78,10 +78,10 @@ export async function GET(
 // Update user profile  
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const { userId } = params;
+    const { userId } = await params;
     const body = await request.json();
     
     if (!userId) {
@@ -112,7 +112,7 @@ export async function PATCH(
     // Build update expression
     const updateExpressionParts = [];
     const expressionAttributeNames: Record<string, string> = {};
-    const expressionAttributeValues: Record<string, any> = {};
+    const expressionAttributeValues: Record<string, string | number | boolean | string[]> = {};
 
     if (firstName !== undefined) {
       updateExpressionParts.push('#firstName = :firstName');

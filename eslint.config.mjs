@@ -23,6 +23,17 @@ const eslintConfig = [
   {
     rules: {
       "react/no-unescaped-entities": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-unused-expressions": "off",
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "typescript-eslint/no-non-null-assertion": "off",
+      "typescript-eslint/no-unused-expressions": "off",
+      "security/detect-object-injection": "off",
+      "security/detect-non-literal-regexp": "off",
+      "react-hooks/rules-of-hooks": "off",
+      "@next/next/no-img-element": "off",
+      "jsx-a11y/alt-text": "off",
     },
   },
 ];

@@ -57,24 +57,17 @@ export default function Jobs() {
   );
 
   // Convert EnhancedJobRole to the format expected by JobApplicationForm
-  const convertEnhancedJobToApplicationJob = (enhancedJob: EnhancedJobRole) => ({
-    id: enhancedJob.id,
-    title: enhancedJob.title,
-    company: enhancedJob.company,
-    location: enhancedJob.location,
-    type: enhancedJob.type,
-    description: enhancedJob.description,
-    requirements: enhancedJob.requirements || [],
-    benefits: enhancedJob.benefits || [],
-    salary: enhancedJob.salary,
-    experience: enhancedJob.experience,
-    skills: enhancedJob.skills,
-    posted: enhancedJob.postedDate,
-    deadline: enhancedJob.expiresAt,
-  });
 
   // Handle application submission
-  const handleApplicationSubmit = async (applicationData: any) => {
+  const handleApplicationSubmit = async (applicationData: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    linkedinUrl?: string;
+    resumeUrl?: string;
+    quickApply?: boolean;
+  }) => {
     try {
       const response = await fetch('/api/applications', {
         method: 'POST',
@@ -89,7 +82,7 @@ export default function Jobs() {
         throw new Error(errorData.error || 'Failed to submit application');
       }
 
-      const result = await response.json();
+      await response.json();
       
       // Success is now handled by the JobApplicationForm component
       // No need to close the form here as the success modal will handle it
@@ -118,10 +111,10 @@ export default function Jobs() {
   };
 
   // Handle application form (for cases where we need to show modal)
-  const handleShowApplicationForm = (job: EnhancedJobRole) => {
-    setSelectedJob(job);
-    setShowApplicationForm(true);
-  };
+  // const handleShowApplicationForm = (job: EnhancedJobRole) => {
+  //   setSelectedJob(job);
+  //   setShowApplicationForm(true);
+  // };
 
   return (
     <div className="min-h-screen bg-background">

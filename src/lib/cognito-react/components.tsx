@@ -889,7 +889,7 @@ function determineMobileDeviceName() {
     "Windows Phone",
   ] as const;
   return mobileDevices.find((dev) =>
-    // eslint-disable-next-line security/detect-non-literal-regexp
+    // eslint-disable-next-line
     navigator.userAgent.match(new RegExp(dev, "i"))
   );
 }

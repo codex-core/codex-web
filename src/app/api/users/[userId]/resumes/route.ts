@@ -79,7 +79,7 @@ export async function DELETE(
     }
 
     const existingResumes = userResult.Item.resumes || [];
-    const updatedResumes = existingResumes.filter((resume: any) => resume.resumeId !== resumeId);
+    const updatedResumes = existingResumes.filter((resume: { resumeId: string }) => resume.resumeId !== resumeId);
 
     // Update user with remaining resumes
     const updateCommand = new UpdateCommand({
@@ -148,7 +148,7 @@ export async function PATCH(
     const existingResumes = userResult.Item.resumes || [];
     
     // Update resumes array
-    const updatedResumes = existingResumes.map((resume: any) => {
+    const updatedResumes = existingResumes.map((resume: { resumeId: string; isDefault?: boolean }) => {
       if (resume.resumeId === resumeId) {
         return { ...resume, isDefault };
       } else if (isDefault) {

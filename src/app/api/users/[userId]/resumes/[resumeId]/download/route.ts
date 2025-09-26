@@ -38,7 +38,7 @@ export async function GET(
     }
 
     const resumes = userResult.Item.resumes || [];
-    const resume = resumes.find((r: any) => r.resumeId === resumeId);
+    const resume = resumes.find((r: { resumeId: string }) => r.resumeId === resumeId);
 
     if (!resume) {
       return NextResponse.json(

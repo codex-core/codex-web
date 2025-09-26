@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { usePasswordless } from '@/lib/cognito-react';
-import { Upload, FileText, CheckCircle, AlertCircle, MapPin, Clock, DollarSign, PartyPopper, Mail, Calendar, Zap } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertCircle, MapPin, Clock, DollarSign, Mail, Calendar, Zap } from 'lucide-react';
 import { EnhancedJobRole } from '@/lib/types/enhanced-job';
 
 interface JobApplicationFormProps {

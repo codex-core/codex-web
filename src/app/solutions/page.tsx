@@ -79,7 +79,7 @@ export default function Solutions() {
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-6xl">
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {services.map((service, index) => (
+              {services.map((service) => (
                 <div
                   key={service.title}
                   className="rounded-2xl border bg-card p-8 transition-all hover:shadow-lg"

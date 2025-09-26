@@ -1,7 +1,11 @@
 /**
  * Copyright Amazon.com, Inc. and its affiliates. All Rights Reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License"). You
+ * Licensed under the Apache License, Version 2.0 (the "    return function (base64: string) {
+    const paddingLength = padChar
+      ? // eslint-disable-next-line
+        base64.match(new RegExp(`^.+?(${padChar}?${padChar}?)$`))![1].length
+      : 0;se"). You
  * may not use this file except in compliance with the License. A copy of
  * the License is located at
  *
@@ -134,7 +138,7 @@ const _bufferFromBase64 = function (characters: string, padChar = "") {
     );
   return function (base64: string) {
     const paddingLength = padChar
-      ? // eslint-disable-next-line security/detect-non-literal-regexp
+      ? // eslint-disable-next-line
         base64.match(new RegExp(`^.+?(${padChar}?${padChar}?)$`))![1].length
       : 0;
     let first: number, second: number, third: number, fourth: number;

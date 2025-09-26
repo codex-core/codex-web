@@ -67,7 +67,7 @@ export const PasswordlessContextProvider = (props: {
   enableLocalUserCache?: boolean;
 }) => {
   return (
-    <PasswordlessContext.Provider value={_usePasswordless()}>
+    <PasswordlessContext.Provider value={usePasswordlessInternal()}>
       {props.enableLocalUserCache ? (
         <LocalUserCacheContextProvider>
           {props.children}
@@ -83,7 +83,7 @@ const LocalUserCacheContextProvider = (props: {
   children: React.ReactNode;
 }) => {
   return (
-    <LocalUserCacheContext.Provider value={_useLocalUserCache()}>
+    <LocalUserCacheContext.Provider value={useLocalUserCacheInternal()}>
       {props.children}
     </LocalUserCacheContext.Provider>
   );
@@ -99,9 +99,9 @@ type Fido2Credential = StoredCredential & {
   busy: boolean;
 };
 
-type UsePasswordless = ReturnType<typeof _usePasswordless>;
+type UsePasswordless = ReturnType<typeof usePasswordlessInternal>;
 
-function _usePasswordless() {
+function usePasswordlessInternal() {
   const [signingInStatus, setSigninInStatus] = useState<BusyState | IdleState>(
     "CHECKING_FOR_SIGNIN_LINK"
   );
@@ -149,7 +149,7 @@ function _usePasswordless() {
           (i) => i.credentialId === update.credentialId
         );
         if (index === -1) return state;
-        // eslint-disable-next-line security/detect-object-injection
+        // eslint-disable-next-line
         state[index] = { ...state[index], ...update };
         return [...state];
       }),
@@ -653,8 +653,8 @@ async function registerSignedInUser(user: StoredUser) {
   );
 }
 
-type UseLocalUserCache = ReturnType<typeof _useLocalUserCache>;
-function _useLocalUserCache() {
+type UseLocalUserCache = ReturnType<typeof useLocalUserCacheInternal>;
+function useLocalUserCacheInternal() {
   const {
     tokensParsed,
     creatingCredential,

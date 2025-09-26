@@ -2,11 +2,10 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Menu, X, User, LogOut } from "lucide-react";
+import { Menu, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
-import Image from "next/image";
 import { useTheme } from "next-themes";
 import { usePasswordless } from "@/lib/cognito-react";
 import { useRouter } from "next/navigation";
@@ -25,7 +24,6 @@ export default function Navbar() {
 	const { theme, systemTheme } = useTheme();
 	const { signInStatus, tokensParsed, signOut } = usePasswordless();
 	const router = useRouter();
-	const resolvedTheme = theme === "system" ? systemTheme : theme;
 
 	const isSignedIn = signInStatus === "SIGNED_IN" && tokensParsed;
 	

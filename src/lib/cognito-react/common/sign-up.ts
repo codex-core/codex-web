@@ -146,7 +146,7 @@ async function _confirmSignUpAndRequestMagicLink(props: {
       debug?.(`Requesting magic link for user: ${username}`);
       
       // Import requestSignInLink dynamically to avoid circular dependency
-      const { requestSignInLink } = await import("./magic-link.js");
+      const { requestSignInLink } = await import("./magic-link");
       
       const magicLinkRequest = requestSignInLink({
         username,

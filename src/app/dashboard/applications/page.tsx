@@ -9,7 +9,6 @@ import { usePasswordless } from "@/lib/cognito-react";
 import { 
   FileText, 
   Search, 
-  Filter,
   ExternalLink,
   Download,
   Calendar,

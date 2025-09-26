@@ -336,7 +336,6 @@ function assertIsFido2Options(o: unknown): asserts o is Fido2Options {
       ))
   ) {
     const { debug } = configure();
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     debug?.(`Invalid Fido2 options: ${JSON.stringify(o)}`);
     throw new Error("Invalid Fido2 options");
   }

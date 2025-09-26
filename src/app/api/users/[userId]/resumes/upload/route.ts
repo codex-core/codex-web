@@ -98,7 +98,7 @@ export async function POST(
     // If this resume is set as default, unset all other defaults
     let updatedResumes = existingResumes;
     if (isDefault) {
-      updatedResumes = existingResumes.map((resume: any) => ({
+      updatedResumes = existingResumes.map((resume: { isDefault?: boolean }) => ({
         ...resume,
         isDefault: false,
       }));

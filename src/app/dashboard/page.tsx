@@ -8,7 +8,6 @@ import { usePasswordless } from "@/lib/cognito-react";
 import { useRouter } from "next/navigation";
 import { 
   FileText, 
-  User, 
   Clock, 
   CheckCircle, 
   XCircle,

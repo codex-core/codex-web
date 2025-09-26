@@ -59,7 +59,7 @@ export default function JobDetailPage() {
         throw new Error(errorData.error || 'Failed to submit application');
       }
 
-      const result = await response.json();
+      await response.json();
       
       // Success is now handled by the JobApplicationForm component
       
