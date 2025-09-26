@@ -73,7 +73,7 @@ export default function BusinessInsights() {
               </h2>
               
               {featuredPosts.map((post) => (
-                <Card key={post.id} className="border-2 bg-card p-8 lg:p-12">
+                <Card key={post.id} className="border-2 bg-card p-8 lg:p-12 mb-8">
                   <div className="flex items-center space-x-2 mb-4">
                     <Badge>{post.category}</Badge>
                     <Badge variant="secondary">Featured</Badge>
@@ -118,7 +118,7 @@ export default function BusinessInsights() {
       )}
 
       {/* All Business Posts */}
-      <section className="py-20 lg:py-32">
+      <section className="py-10 lg:py-20">
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-6xl">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-12 text-center">

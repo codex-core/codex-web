@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
+
 import { v4 as uuidv4 } from 'uuid';
 
 const client = new DynamoDBClient({
@@ -42,6 +44,28 @@ export async function POST(request: NextRequest) {
       Item: userRecord,
       ConditionExpression: 'attribute_not_exists(GSI1PK)', // Prevent duplicate emails
     }));
+
+    // Send email notification to the new user via SQS
+  const sqs = new SQSClient({ region: process.env.AWS_REGION || 'us-east-1' });
+  const EMAIL_QUEUE_URL = process.env.EMAIL_QUEUE_URL;
+  try {
+  if (EMAIL_QUEUE_URL) {
+    const emailMsg = {
+      type: 'accountCreated',
+      to: userRecord.Email,
+      data: {
+        firstName: userRecord.FirstName,
+        // Add more fields as needed for the template
+      }
+    };
+    await sqs.send(new SendMessageCommand({
+      QueueUrl: EMAIL_QUEUE_URL,
+      MessageBody: JSON.stringify(emailMsg),
+    }));
+  }
+  } catch (emailErr) {
+    console.error('Failed to enqueue email message:', emailErr);
+  }
 
     return NextResponse.json({ userId });
   } catch (error) {
