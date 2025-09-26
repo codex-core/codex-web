@@ -16,7 +16,11 @@ import {
   X,
   Save,
   Edit,
-  Download
+  Download,
+  AlertCircle,
+  Shield,
+  CheckCircle2,
+  Clock
 } from "lucide-react";
 
 interface UserProfile {
@@ -34,6 +38,8 @@ interface UserProfile {
   githubUrl?: string;
   portfolioUrl?: string;
   resumes?: Resume[];
+  identityVerificationStatus?: 'not_started' | 'pending' | 'verified' | 'failed';
+  identityVerifiedAt?: string;
 }
 
 interface Resume {
@@ -101,6 +107,8 @@ export default function ProfilePage() {
           githubUrl: userProfile.githubUrl,
           portfolioUrl: userProfile.portfolioUrl,
           resumes: userProfile.resumes || [],
+          identityVerificationStatus: userProfile.identityVerificationStatus || 'not_started',
+          identityVerifiedAt: userProfile.identityVerifiedAt,
         };
 
         setProfile(fullProfile);
@@ -162,7 +170,6 @@ export default function ProfilePage() {
 
   const handleAddSkill = () => {
     if (!newSkill.trim() || !profile) return;
-    
     const updatedSkills = [...(profile.skills || []), newSkill.trim()];
     setProfile({ ...profile, skills: updatedSkills });
     setNewSkill("");
@@ -352,6 +359,56 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* Profile Completion Alert */}
+      {profile && (!profile.location || resumes.length === 0 /*|| profile.identityVerificationStatus !== 'verified'*/) && (
+        <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950/20">
+          <CardContent className="pt-6">
+            <div className="flex items-start space-x-4">
+              <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-orange-900 dark:text-orange-100">
+                  Complete Your Profile
+                </h3>
+                <p className="text-sm text-orange-800 dark:text-orange-200 mt-1 mb-3">
+                  Please fill in the highlighted fields below to help us match you with the best opportunities.
+                </p>
+                <div className="space-y-2 text-sm">
+                  {!profile.location && (
+                    <div className="flex items-center space-x-2 text-orange-700 dark:text-orange-300">
+                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                      <span>Location is required to match you with the right clients</span>
+                    </div>
+                  )}
+                  {resumes.length === 0 && (
+                    <div className="flex items-center space-x-2 text-orange-700 dark:text-orange-300">
+                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                      <span>Upload a resume to apply for jobs quickly</span>
+                    </div>
+                  )}
+                  {profile.identityVerificationStatus !== 'verified' && (
+                    <div className="flex items-center space-x-2 text-orange-700 dark:text-orange-300">
+                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                      <span>Complete identity verification to earn your "Codex Verified" badge</span>
+                    </div>
+                  )}
+                </div>
+                {!isEditing && (
+                  <div className="mt-4">
+                    <Button 
+                      size="sm" 
+                      onClick={() => setIsEditing(true)}
+                      className="bg-orange-600 hover:bg-orange-700 text-white"
+                    >
+                      Start Editing Profile
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Profile Information */}
         <Card>
@@ -405,14 +462,20 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="location" className={!profile.location ? "text-orange-600 font-medium" : ""}>
+                Location {!profile.location && <span className="text-orange-500">*</span>}
+              </Label>
               <Input
                 id="location"
                 value={profile.location || ""}
                 onChange={(e) => handleInputChange('location', e.target.value)}
                 disabled={!isEditing}
                 placeholder="City, State"
+                className={!profile.location ? "border-orange-300 focus:border-orange-500 focus:ring-orange-200" : ""}
               />
+              {!profile.location && (
+                <p className="text-xs text-orange-600 mt-1">Location helps us find relevant local and remote opportunities for you</p>
+              )}
             </div>
 
             <div>
@@ -525,12 +588,17 @@ export default function ProfilePage() {
       </div>
 
       {/* Resume Management */}
-      <Card>
+      <Card className={resumes.length === 0 ? "border-orange-200" : ""}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className={`flex items-center gap-2 ${resumes.length === 0 ? "text-orange-700" : ""}`}>
             <FileText className="w-5 h-5" />
-            Resume Management
+            Resume Management {resumes.length === 0 && <span className="text-orange-500">*</span>}
           </CardTitle>
+          {resumes.length === 0 && (
+            <p className="text-sm text-orange-600 mt-2">
+              Upload at least one resume to apply for jobs
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -546,9 +614,10 @@ export default function ProfilePage() {
               <Button
                 onClick={() => document.getElementById('resume-upload')?.click()}
                 disabled={uploadingResume}
+                className={resumes.length === 0 ? "bg-orange-600 hover:bg-orange-700 text-white" : ""}
               >
                 <Upload className="w-4 h-4 mr-2" />
-                {uploadingResume ? 'Uploading...' : 'Upload New Resume'}
+                {uploadingResume ? 'Uploading...' : (resumes.length === 0 ? 'Upload Your First Resume' : 'Upload New Resume')}
               </Button>
               
               {uploadError && (
@@ -558,10 +627,10 @@ export default function ProfilePage() {
             
             <div className="space-y-3">
               {resumes.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>No resumes uploaded yet</p>
-                  <p className="text-sm">Upload your first resume to get started</p>
+                <div className="text-center py-8 border-2 border-dashed border-orange-200 rounded-lg bg-orange-50/50 dark:bg-orange-950/10">
+                  <FileText className="w-12 h-12 mx-auto mb-4 text-orange-400" />
+                  <p className="text-orange-700 dark:text-orange-300 font-medium">No resumes uploaded yet</p>
+                  <p className="text-sm text-orange-600 dark:text-orange-400">Upload your first resume to start applying for jobs</p>
                 </div>
               ) : (
                 resumes.map((resume) => (
@@ -611,6 +680,128 @@ export default function ProfilePage() {
                 ))
               )}
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Identity Verification Section */}
+      <Card className={profile.identityVerificationStatus !== 'verified' ? "border-blue-200" : ""}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="w-5 h-5" />
+            Identity Verification
+            {profile.identityVerificationStatus === 'verified' && (
+              <Badge className="bg-green-100 text-green-800 border-green-300">
+                <CheckCircle2 className="w-3 h-3 mr-1" />
+                Codex Verified
+              </Badge>
+            )}
+            {profile.identityVerificationStatus === 'pending' && (
+              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                <Clock className="w-3 h-3 mr-1" />
+                Pending
+              </Badge>
+            )}
+          </CardTitle>
+          <div className="text-sm text-muted-foreground">
+            {profile.identityVerificationStatus === 'verified' ? (
+              <p>
+                ✅ Your identity has been verified with Plaid. You now have the "Codex Verified" badge that sets you apart from other platforms.
+                {profile.identityVerifiedAt && (
+                  <span className="block mt-1">
+                    Verified on {new Date(profile.identityVerifiedAt).toLocaleDateString()}
+                  </span>
+                )}
+              </p>
+            ) : profile.identityVerificationStatus === 'pending' ? (
+              <p>Your identity verification is being processed. This typically takes 1-2 business days.</p>
+            ) : profile.identityVerificationStatus === 'failed' ? (
+              <p className="text-red-600">Identity verification failed. Please try again or contact support.</p>
+            ) : (
+              <p>Verify your identity with Plaid to earn the "Codex Verified" badge and stand out to premium clients.</p>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {profile.identityVerificationStatus === 'not_started' && (
+              <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
+                <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                  Why verify your identity?
+                </h4>
+                <ul className="text-sm space-y-2 text-blue-800 dark:text-blue-200">
+                  <li className="flex items-start space-x-2">
+                    <CheckCircle2 className="w-4 h-4 mt-0.5 text-blue-600" />
+                    <span>Get the "Codex Verified" badge that clients trust</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <CheckCircle2 className="w-4 h-4 mt-0.5 text-blue-600" />
+                    <span>Stand out from unverified consultants on other platforms</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <CheckCircle2 className="w-4 h-4 mt-0.5 text-blue-600" />
+                    <span>Access to premium client opportunities</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <CheckCircle2 className="w-4 h-4 mt-0.5 text-blue-600" />
+                    <span>Secure, bank-level verification powered by Plaid</span>
+                  </li>
+                </ul>
+              </div>
+            )}
+            
+            <div className="flex items-center justify-between">
+              <div>
+                {profile.identityVerificationStatus === 'not_started' && (
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    disabled
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
+                    Start Verification (Coming Soon)
+                  </Button>
+                )}
+                {profile.identityVerificationStatus === 'pending' && (
+                  <Button variant="outline" disabled>
+                    <Clock className="w-4 h-4 mr-2" />
+                    Verification in Progress
+                  </Button>
+                )}
+                {profile.identityVerificationStatus === 'failed' && (
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    disabled
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
+                    Retry Verification (Coming Soon)
+                  </Button>
+                )}
+                {profile.identityVerificationStatus === 'verified' && (
+                  <Button variant="outline" disabled>
+                    <CheckCircle2 className="w-4 h-4 mr-2 text-green-600" />
+                    Verified
+                  </Button>
+                )}
+              </div>
+              
+              <Button 
+                variant="link" 
+                className="text-blue-600 hover:text-blue-800"
+                onClick={() => window.open('/identity-verification', '_blank')}
+              >
+                Learn more about our verification process
+              </Button>
+            </div>
+            
+            {profile.identityVerificationStatus === 'not_started' && (
+              <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded">
+                <p>
+                  <strong>Coming Soon:</strong> Identity verification will be available soon. 
+                  We're partnering with Plaid to provide bank-level security and verification 
+                  that sets Codex Studios apart from other consulting platforms.
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

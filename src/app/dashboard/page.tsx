@@ -42,6 +42,16 @@ interface UserProfile {
   firstName: string;
   lastName: string;
   role: string;
+  location?: string;
+  resumes?: Resume[];
+}
+
+interface Resume {
+  resumeId: string;
+  fileName: string;
+  uploadedAt: string;
+  s3Key: string;
+  isDefault: boolean;
 }
 
 export default function DashboardPage() {
@@ -78,9 +88,22 @@ export default function DashboardPage() {
           setError("User not found in database");
           return;
         }
-
+        console.log('User data fetched:', userData);
         const user = userData.user;
-        setUserProfile(user);
+
+        // Fetch full profile details to get location and resumes
+        const profileResponse = await fetch(`/api/users/${user.userId}`);
+        if (profileResponse.ok) {
+          const profileData = await profileResponse.json();
+          const fullProfile = {
+            ...user,
+            location: profileData.user.location,
+            resumes: profileData.user.resumes || [],
+          };
+          setUserProfile(fullProfile);
+        } else {
+          setUserProfile(user);
+        }
 
         // Now fetch applications for this user
         const applicationsResponse = await fetch(`/api/users/${user.userId}/applications`);
@@ -187,52 +210,98 @@ export default function DashboardPage() {
             Welcome back, {userProfile?.firstName}!
           </h1>
           <p className="text-muted-foreground">
-            Here's an overview of your job applications
+            Your consultant dashboard - we'll notify you when clients need your expertise
           </p>
         </div>
-        <Button onClick={() => router.push('/jobs')}>
+        <Button onClick={() => router.push('/dashboard/profile')}>
           <Upload className="w-4 h-4 mr-2" />
-          Browse Jobs
+          Update Profile
         </Button>
       </div>
+
+      {/* Profile Completion Alerts */}
+      {userProfile && (
+        <div className="space-y-4">
+          {(!userProfile.location || !userProfile.resumes || userProfile.resumes.length === 0) && (
+            <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950/20">
+              <CardContent className="pt-6">
+                <div className="flex items-start space-x-4">
+                  <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-orange-900 dark:text-orange-100">
+                      Complete Your Profile
+                    </h3>
+                    <p className="text-sm text-orange-800 dark:text-orange-200 mt-1 mb-3">
+                      Help us match you with the right clients by completing your consultant profile.
+                    </p>
+                    <div className="space-y-2 text-sm">
+                      {!userProfile.location && (
+                        <div className="flex items-center space-x-2 text-orange-700 dark:text-orange-300">
+                          <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                          <span>Add your location so we can match you with nearby or remote clients</span>
+                        </div>
+                      )}
+                      {(!userProfile.resumes || userProfile.resumes.length === 0) && (
+                        <div className="flex items-center space-x-2 text-orange-700 dark:text-orange-300">
+                          <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                          <span>Upload your resume so clients can review your experience and skills</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-4 flex space-x-3">
+                      <Button 
+                        size="sm" 
+                        onClick={() => router.push('/dashboard/profile')}
+                        className="bg-orange-600 hover:bg-orange-700 text-white"
+                      >
+                        Complete Profile
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
+            <CardTitle className="text-sm font-medium">Client Matches</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalApplications}</div>
             <p className="text-xs text-muted-foreground">
-              Applications submitted
+              Total client engagements
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
+            <CardTitle className="text-sm font-medium">Active Discussions</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.pendingApplications}</div>
             <p className="text-xs text-muted-foreground">
-              Awaiting response
+              Ongoing client conversations
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Accepted</CardTitle>
+            <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.acceptedApplications}</div>
             <p className="text-xs text-muted-foreground">
-              Successful applications
+              Current client projects
             </p>
           </CardContent>
         </Card>
@@ -249,7 +318,7 @@ export default function DashboardPage() {
                 : 0}%
             </div>
             <p className="text-xs text-muted-foreground">
-              Application success rate
+              Client engagement rate
             </p>
           </CardContent>
         </Card>
@@ -259,7 +328,7 @@ export default function DashboardPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Recent Applications</CardTitle>
+            <CardTitle>Recent Client Matches</CardTitle>
             {applications.length > 0 && (
               <Button variant="outline" onClick={() => router.push('/dashboard/applications')}>
                 View All
@@ -271,11 +340,11 @@ export default function DashboardPage() {
           {applications.length === 0 ? (
             <div className="text-center py-8">
               <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">No applications yet</h3>
+              <h3 className="text-lg font-medium mb-2">No client matches yet</h3>
               <p className="text-muted-foreground mb-4">
-                Start browsing jobs and submit your first application
+                Complete your profile and we'll notify you when clients need your expertise
               </p>
-              <Button onClick={() => router.push('/jobs')}>Browse Jobs</Button>
+              <Button onClick={() => router.push('/dashboard/profile')}>Complete Profile</Button>
             </div>
           ) : (
             <div className="space-y-4">
@@ -301,9 +370,9 @@ export default function DashboardPage() {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => router.push(`/jobs/${app.jobId}`)}
+                      onClick={() => router.push(`/dashboard/projects/${app.jobId}`)}
                     >
-                      View Job
+                      View Project
                     </Button>
                   </div>
                 </div>
@@ -314,7 +383,7 @@ export default function DashboardPage() {
                     variant="outline" 
                     onClick={() => router.push('/dashboard/applications')}
                   >
-                    View {applications.length - 5} More Applications
+                    View {applications.length - 5} More Matches
                   </Button>
                 </div>
               )}

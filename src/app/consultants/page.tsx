@@ -50,8 +50,7 @@ export default function Consultants() {
         <div className="absolute inset-0 bg-grid-black/[0.02] bg-[length:50px_50px] dark:bg-grid-white/[0.02]" />
         {/* Placeholder for hero background image */}
         <div className="absolute right-0 top-0 w-1/3 h-full opacity-10">
-          <div className="w-full h-full bg-gradient-to-l from-muted-foreground/20 to-transparent rounded-l-3xl flex items-center justify-center">
-            <div className="text-6xl text-muted-foreground/30">👥</div>
+          <div className="w-full h-full bg-gradient-to-l from-muted-foreground/20 to-transparent rounded-l-3xl">
           </div>
         </div>
         <div className="container relative mx-auto px-4">
@@ -100,9 +99,11 @@ export default function Consultants() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                  Learn More
-                </Button>
+                <Link href="#why-join">
+                  <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+                    Learn More
+                  </Button>
+                </Link>
               </motion.div>
             </motion.div>
           </div>
@@ -130,8 +131,7 @@ export default function Consultants() {
                   className="text-center relative group"
                 >
                   {/* Placeholder for stat visualization/chart */}
-                  <div className="w-full h-20 bg-muted/20 rounded-lg mb-4 flex items-center justify-center group-hover:bg-muted/30 transition-colors">
-                    <div className="text-2xl opacity-60">📊</div>
+                  <div className="w-full h-20 bg-muted/20 rounded-lg mb-4 group-hover:bg-muted/30 transition-colors">
                   </div>
                   
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground/10 mx-auto mb-4 group-hover:bg-foreground/20 transition-colors">
@@ -181,15 +181,7 @@ export default function Consultants() {
                   <Card className="h-full transition-all hover:shadow-lg group">
                     <CardHeader>
                       {/* Placeholder for role/tech stack illustration */}
-                      <div className="w-full h-24 bg-gradient-to-br from-muted/30 to-muted/10 rounded-lg mb-4 flex items-center justify-center group-hover:from-muted/40 group-hover:to-muted/20 transition-all">
-                        <div className="text-3xl opacity-70">
-                          {role.category === "Cloud Architecture" && "☁️"}
-                          {role.category === "Full Stack Development" && "💻"}
-                          {role.category === "AI/ML" && "🤖"}
-                          {role.category === "DevOps" && "⚙️"}
-                          {role.category === "Data Engineering" && "📊"}
-                          {role.category === "Frontend" && "🎨"}
-                        </div>
+                      <div className="w-full h-24 bg-gradient-to-br from-muted/30 to-muted/10 rounded-lg mb-4 group-hover:from-muted/40 group-hover:to-muted/20 transition-all">
                       </div>
                       
                       <div className="flex items-center justify-between mb-2">
@@ -248,7 +240,7 @@ export default function Consultants() {
       </section>
 
       {/* Why Join Section */}
-      <section className="py-20 lg:py-32">
+      <section id="why-join" className="py-20 lg:py-32">
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-6xl">
             <motion.div
@@ -277,13 +269,7 @@ export default function Consultants() {
                   className="text-center"
                 >
                   {/* Placeholder for consultant photos/illustrations */}
-                  <div className="w-full h-32 bg-muted/30 rounded-lg mb-4 flex items-center justify-center">
-                    <div className="text-3xl opacity-50">
-                      {index === 0 && "🎯"}
-                      {index === 1 && "⚡"}
-                      {index === 2 && "👥"}
-                      {index === 3 && "⭐"}
-                    </div>
+                  <div className="w-full h-32 bg-muted/30 rounded-lg mb-4">
                   </div>
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground/10 mx-auto mb-6">
                     <reason.icon className="h-8 w-8 text-foreground" />
