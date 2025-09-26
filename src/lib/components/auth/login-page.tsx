@@ -61,7 +61,7 @@ export default function LoginPageComponent() {
 
       console.log('User found, sending magic link...');
       // User exists, proceed with magic link
-      await requestSignInLink({ username, redirectUri: 'http://localhost:3000/magic' });
+      await requestSignInLink({ username, redirectUri: `${window.location.origin}/magic` });
       setLinkSent(true);
       console.log('Magic link sent successfully');
     } catch (err: any) {

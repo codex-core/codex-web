@@ -85,7 +85,7 @@ export default function SignUpPage() {
       // Step 3: Send magic link
       requestSignInLink({
         username: formData.email,
-        redirectUri: 'http://localhost:3000/magic'
+        redirectUri: `${window.location.origin}/magic`
       });
       
       setStep('complete');
