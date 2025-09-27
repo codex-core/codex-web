@@ -55,6 +55,8 @@ interface ApplicationData {
   lastName: string;
   email: string;
   phone: string;
+  city: string;
+  state: string;
   coverLetter: string;
   linkedinProfile?: string;
   resumeFile: File | null;
@@ -68,6 +70,8 @@ export default function JobApplicationForm({ job, open, onClose, onSubmit }: Job
     lastName: '',
     email: '',
     phone: '',
+    city: '',
+    state: '',
     coverLetter: '',
     linkedinProfile: '',
     resumeFile: null,
@@ -123,12 +127,19 @@ export default function JobApplicationForm({ job, open, onClose, onSubmit }: Job
   // Pre-fill form data when user profile loads
   useEffect(() => {
     if (userProfile && isQuickApply) {
+      // Parse location from user profile (assumes "City, State" format)
+      const locationParts = userProfile.location ? userProfile.location.split(',').map(part => part.trim()) : ['', ''];
+      const city = locationParts[0] || '';
+      const state = locationParts[1] || '';
+
       setFormData(prev => ({
         ...prev,
         firstName: userProfile.firstName || '',
         lastName: userProfile.lastName || '',
         email: userProfile.email || '',
         phone: userProfile.phone || '',
+        city: city,
+        state: state,
         linkedinProfile: userProfile.linkedinUrl || '',
         coverLetter: prev.coverLetter || `Dear Hiring Manager,\n\nI am excited to apply for the ${job.title} position at ${job.company}. ${userProfile.bio ? `\n\n${userProfile.bio}` : ''}\n\nI look forward to discussing how my experience can contribute to your team.\n\nBest regards,\n${userProfile.firstName} ${userProfile.lastName}`,
       }));
@@ -259,6 +270,11 @@ export default function JobApplicationForm({ job, open, onClose, onSubmit }: Job
       return;
     }
 
+    if (!formData.city.trim() || !formData.state.trim()) {
+      setUploadError('Please provide both city and state');
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -270,6 +286,8 @@ export default function JobApplicationForm({ job, open, onClose, onSubmit }: Job
       }
 
       // Prepare application data
+      const location = formData.city && formData.state ? `${formData.city}, ${formData.state}` : '';
+      
       const applicationData = {
         jobId: job.id,
         applicantInfo: {
@@ -277,6 +295,7 @@ export default function JobApplicationForm({ job, open, onClose, onSubmit }: Job
           lastName: formData.lastName,
           email: formData.email,
           phone: formData.phone,
+          location: location,
           linkedinProfile: formData.linkedinProfile,
         },
         coverLetter: formData.coverLetter,
@@ -313,6 +332,8 @@ export default function JobApplicationForm({ job, open, onClose, onSubmit }: Job
       lastName: '',
       email: '',
       phone: '',
+      city: '',
+      state: '',
       coverLetter: '',
       linkedinProfile: '',
       resumeFile: null,
@@ -326,6 +347,8 @@ export default function JobApplicationForm({ job, open, onClose, onSubmit }: Job
       lastName: '',
       email: '',
       phone: '',
+      city: '',
+      state: '',
       coverLetter: '',
       linkedinProfile: '',
       resumeFile: null,
@@ -564,6 +587,44 @@ export default function JobApplicationForm({ job, open, onClose, onSubmit }: Job
                   required
                   className={isQuickApply ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800" : ""}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-gray-500" />
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Location *</Label>
+                  {isQuickApply && (formData.city || formData.state) && (
+                    <Badge variant="secondary" className="text-xs">
+                      <Zap className="w-3 h-3 mr-1" />
+                      Pre-filled
+                    </Badge>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Input
+                      id="city"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="City (e.g. New York)"
+                      className={isQuickApply && formData.city ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800" : ""}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Input
+                      id="state"
+                      name="state"
+                      value={formData.state}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="State (e.g. NY)"
+                      className={isQuickApply && formData.state ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800" : ""}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -886,6 +947,8 @@ export default function JobApplicationForm({ job, open, onClose, onSubmit }: Job
                       lastName: '',
                       email: '',
                       phone: '',
+                      city: '',
+                      state: '',
                       coverLetter: '',
                       linkedinProfile: '',
                       resumeFile: null,
@@ -908,6 +971,8 @@ export default function JobApplicationForm({ job, open, onClose, onSubmit }: Job
                       lastName: '',
                       email: '',
                       phone: '',
+                      city: '',
+                      state: '',
                       coverLetter: '',
                       linkedinProfile: '',
                       resumeFile: null,

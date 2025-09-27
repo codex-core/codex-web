@@ -17,6 +17,7 @@ interface ApplicationRequest {
     lastName: string;
     email: string;
     phone: string;
+    location?: string;
     linkedinProfile?: string;
   };
   coverLetter: string;
@@ -89,6 +90,7 @@ export async function POST(request: NextRequest) {
       ApplicantLastName: lastName,
       ApplicantEmail: email.toLowerCase(),
       ApplicantPhone: phone,
+      ApplicantLocation: applicantInfo.location || null,
       ApplicantLinkedIn: applicantInfo.linkedinProfile || null,
       
       // Application details

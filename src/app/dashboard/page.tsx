@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { usePasswordless } from "@/lib/cognito-react";
 import { useRouter } from "next/navigation";
+import AdminDashboard from "@/components/AdminDashboard";
 import { 
   FileText, 
   Clock, 
@@ -200,6 +201,11 @@ export default function DashboardPage() {
         </Card>
       </div>
     );
+  }
+
+  // Render admin dashboard for admin users
+  if (userProfile?.role === 'admin') {
+    return <AdminDashboard userProfile={userProfile} />;
   }
 
   return (

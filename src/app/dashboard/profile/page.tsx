@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { usePasswordless } from "@/lib/cognito-react";
 import { 
   User,
@@ -20,7 +21,9 @@ import {
   AlertCircle,
   Shield,
   CheckCircle2,
-  Clock
+  Clock,
+  Power,
+  PowerOff
 } from "lucide-react";
 
 interface UserProfile {
@@ -40,6 +43,7 @@ interface UserProfile {
   resumes?: Resume[];
   identityVerificationStatus?: 'not_started' | 'pending' | 'verified' | 'failed';
   identityVerifiedAt?: string;
+  status?: 'active' | 'idle';
 }
 
 interface Resume {
@@ -109,6 +113,7 @@ export default function ProfilePage() {
           resumes: userProfile.resumes || [],
           identityVerificationStatus: userProfile.identityVerificationStatus || 'not_started',
           identityVerifiedAt: userProfile.identityVerifiedAt,
+          status: userProfile.status || 'active',
         };
 
         setProfile(fullProfile);
@@ -149,6 +154,7 @@ export default function ProfilePage() {
           linkedinUrl: profile.linkedinUrl,
           githubUrl: profile.githubUrl,
           portfolioUrl: profile.portfolioUrl,
+          status: profile.status,
         }),
       });
 
@@ -185,6 +191,37 @@ export default function ProfilePage() {
   const handleInputChange = (field: keyof UserProfile, value: string) => {
     if (!profile) return;
     setProfile({ ...profile, [field]: value });
+  };
+
+  const handleStatusChange = async (checked: boolean) => {
+    if (!profile) return;
+    
+    const newStatus = checked ? 'active' : 'idle';
+    
+    try {
+      // Update status immediately for better UX
+      setProfile({ ...profile, status: newStatus });
+      
+      // Save to database
+      const response = await fetch(`/api/users/${profile.userId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: newStatus,
+        }),
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        setProfile({ ...profile, status: profile.status });
+        throw new Error('Failed to update status');
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      // You could add a toast notification here
+    }
   };
 
   const handleResumeUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -358,6 +395,64 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
+
+      {/* Status Toggle */}
+      <Card className={`transition-colors ${
+        profile.status === 'active' 
+          ? 'border-green-200 bg-green-50 dark:bg-green-950/20' 
+          : 'border-gray-200 bg-gray-50 dark:bg-gray-950/20'
+      }`}>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className={`p-2 rounded-full ${
+                profile.status === 'active' 
+                  ? 'bg-green-100 dark:bg-green-900/30' 
+                  : 'bg-gray-100 dark:bg-gray-900/30'
+              }`}>
+                {profile.status === 'active' ? (
+                  <Power className="w-5 h-5 text-green-600" />
+                ) : (
+                  <PowerOff className="w-5 h-5 text-gray-500" />
+                )}
+              </div>
+              <div>
+                <h3 className={`font-semibold ${
+                  profile.status === 'active' 
+                    ? 'text-green-900 dark:text-green-100' 
+                    : 'text-gray-900 dark:text-gray-100'
+                }`}>
+                  Profile Status: {profile.status === 'active' ? 'Active' : 'Idle'}
+                </h3>
+                <p className={`text-sm mt-1 ${
+                  profile.status === 'active' 
+                    ? 'text-green-800 dark:text-green-200' 
+                    : 'text-gray-600 dark:text-gray-400'
+                }`}>
+                  {profile.status === 'active' 
+                    ? 'You are currently available for new opportunities and will appear in client searches.'
+                    : 'You are currently not available for new opportunities and will not appear in client searches.'
+                  }
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <span className={`text-sm font-medium ${
+                profile.status === 'active' 
+                  ? 'text-green-800 dark:text-green-200' 
+                  : 'text-gray-600 dark:text-gray-400'
+              }`}>
+                {profile.status === 'active' ? 'Active' : 'Idle'}
+              </span>
+              <Switch
+                checked={profile.status === 'active'}
+                onCheckedChange={handleStatusChange}
+                className="data-[state=checked]:bg-green-600"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Profile Completion Alert */}
       {profile && (!profile.location || resumes.length === 0 /*|| profile.identityVerificationStatus !== 'verified'*/) && (

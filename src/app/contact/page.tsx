@@ -1,12 +1,92 @@
+"use client";
+
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { MailIcon, PhoneIcon, MapPinIcon, LinkedinIcon, InstagramIcon } from "lucide-react";
+import { MailIcon, PhoneIcon, MapPinIcon, LinkedinIcon, InstagramIcon, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function Contact() {
+  const [formInputs, setFormInputs] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    company: '',
+    phone: '',
+    subject: '',
+    message: '',
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const updateInput = (field: string, value: string) => {
+    setFormInputs(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const submitForm = async () => {
+    // Validate required fields
+    if (!formInputs.firstName || !formInputs.lastName || !formInputs.email || !formInputs.subject || !formInputs.message) {
+      setSubmitStatus('error');
+      setErrorMessage('Please fill in all required fields.');
+      return;
+    }
+
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formInputs.email)) {
+      setSubmitStatus('error');
+      setErrorMessage('Please enter a valid email address.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+    setErrorMessage('');
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formInputs),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send message');
+      }
+
+      setSubmitStatus('success');
+      // Clear form
+      setFormInputs({
+        firstName: '',
+        lastName: '',
+        email: '',
+        company: '',
+        phone: '',
+        subject: '',
+        message: '',
+      });
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      setSubmitStatus('error');
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -37,50 +117,132 @@ export default function Contact() {
               {/* Contact Form */}
               <div className="rounded-2xl border bg-card p-8">
                 <h2 className="text-2xl font-bold mb-6">Send us a message</h2>
-                <form className="space-y-6">
+                
+                {/* Success/Error Messages */}
+                {submitStatus === 'success' && (
+                  <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center space-x-2">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <p className="text-green-800">
+                      Thank you! Your message has been sent successfully. We'll get back to you within 24 hours.
+                    </p>
+                  </div>
+                )}
+                
+                {submitStatus === 'error' && (
+                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
+                    <AlertCircle className="h-5 w-5 text-red-600" />
+                    <p className="text-red-800">{errorMessage}</p>
+                  </div>
+                )}
+                
+                <form className="space-y-6" noValidate>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" placeholder="John" className="mt-1" />
+                      <Label htmlFor="firstName">First Name *</Label>
+                      <Input 
+                        id="firstName" 
+                        name="firstName"
+                        value={formInputs.firstName}
+                        onChange={(e) => updateInput('firstName', e.target.value)}
+                        placeholder="John" 
+                        className="mt-1"
+                        required
+                        disabled={isSubmitting}
+                      />
                     </div>
                     <div>
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" placeholder="Doe" className="mt-1" />
+                      <Label htmlFor="lastName">Last Name *</Label>
+                      <Input 
+                        id="lastName" 
+                        name="lastName"
+                        value={formInputs.lastName}
+                        onChange={(e) => updateInput('lastName', e.target.value)}
+                        placeholder="Doe" 
+                        className="mt-1"
+                        required
+                        disabled={isSubmitting}
+                      />
                     </div>
                   </div>
                   
                   <div>
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" type="email" placeholder="john@example.com" className="mt-1" />
+                    <Label htmlFor="email">Email Address *</Label>
+                    <Input 
+                      id="email" 
+                      name="email"
+                      type="email"
+                      value={formInputs.email}
+                      onChange={(e) => updateInput('email', e.target.value)}
+                      placeholder="john@example.com" 
+                      className="mt-1"
+                      required
+                      disabled={isSubmitting}
+                    />
                   </div>
                   
                   <div>
                     <Label htmlFor="company">Company (Optional)</Label>
-                    <Input id="company" placeholder="Your Company" className="mt-1" />
+                    <Input 
+                      id="company" 
+                      name="company"
+                      value={formInputs.company}
+                      onChange={(e) => updateInput('company', e.target.value)}
+                      placeholder="Your Company" 
+                      className="mt-1"
+                      disabled={isSubmitting}
+                    />
                   </div>
                   
                   <div>
                     <Label htmlFor="phone">Phone Number (Optional)</Label>
-                    <Input id="phone" type="tel" placeholder="+1 (555) 123-4567" className="mt-1" />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="subject">Subject</Label>
-                    <Input id="subject" placeholder="How can we help you?" className="mt-1" />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="message">Message</Label>
-                    <Textarea 
-                      id="message" 
-                      placeholder="Tell us about your project and how we can help..."
-                      className="mt-1 min-h-[120px]"
+                    <Input 
+                      id="phone" 
+                      name="phone"
+                      type="tel"
+                      value={formInputs.phone}
+                      onChange={(e) => updateInput('phone', e.target.value)}
+                      placeholder="+1 (555) 123-4567" 
+                      className="mt-1"
+                      disabled={isSubmitting}
                     />
                   </div>
                   
-                  <Button type="submit" size="lg" className="w-full">
-                    Send Message
-                  </Button>
+                  <div>
+                    <Label htmlFor="subject">Subject *</Label>
+                    <Input 
+                      id="subject" 
+                      name="subject"
+                      value={formInputs.subject}
+                      onChange={(e) => updateInput('subject', e.target.value)}
+                      placeholder="How can we help you?" 
+                      className="mt-1"
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="message">Message *</Label>
+                    <Textarea 
+                      id="message"
+                      name="message"
+                      value={formInputs.message}
+                      onChange={(e) => updateInput('message', e.target.value)}
+                      placeholder="Tell us about your project and how we can help..."
+                      className="mt-1 min-h-[120px]"
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  
+                  <button 
+                    type="button" 
+                    className="w-full px-4 py-3 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isSubmitting}
+                    onClick={submitForm}
+                  >
+                    {isSubmitting ? 'Sending...' : 'Send Message'}
+                  </button>
                 </form>
               </div>
 

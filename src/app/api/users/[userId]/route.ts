@@ -106,7 +106,8 @@ export async function PATCH(
       location,
       linkedinUrl,
       githubUrl,
-      portfolioUrl
+      portfolioUrl,
+      status
     } = body;
 
     // Build update expression
@@ -172,6 +173,12 @@ export async function PATCH(
       updateExpressionParts.push('#portfolioUrl = :portfolioUrl');
       expressionAttributeNames['#portfolioUrl'] = 'PortfolioUrl';
       expressionAttributeValues[':portfolioUrl'] = portfolioUrl;
+    }
+
+    if (status !== undefined) {
+      updateExpressionParts.push('#status = :status');
+      expressionAttributeNames['#status'] = 'Status';
+      expressionAttributeValues[':status'] = status;
     }
 
     if (updateExpressionParts.length === 0) {

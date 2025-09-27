@@ -12,7 +12,10 @@ import {
   Settings, 
   LogOut,
   Home,
-  Building2
+  Building2,
+  Shield,
+  Users,
+  BarChart3
 } from "lucide-react";
 
 interface UserProfile {
@@ -133,38 +136,81 @@ export default function DashboardLayout({
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                  onClick={() => router.push("/dashboard")}
-                >
-                  <Home className="w-4 h-4 mr-2" />
-                  Dashboard
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                  onClick={() => router.push("/dashboard/applications")}
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  Applications
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                  onClick={() => router.push("/dashboard/profile")}
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Profile
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                  onClick={() => router.push("/jobs")}
-                >
-                  <Building2 className="w-4 h-4 mr-2" />
-                  Browse Jobs
-                </Button>
+                {userProfile.role === 'admin' ? (
+                  // Admin Navigation
+                  <>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => router.push("/dashboard")}
+                    >
+                      <BarChart3 className="w-4 h-4 mr-2" />
+                      Admin Dashboard
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => router.push("/dashboard?view=applicants")}
+                    >
+                      <FileText className="w-4 h-4 mr-2" />
+                      Applications
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => router.push("/dashboard?view=jobs")}
+                    >
+                      <Building2 className="w-4 h-4 mr-2" />
+                      Job Postings
+                    </Button>
+                    <div className="pt-2 border-t mt-2">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start"
+                        onClick={() => router.push("/dashboard/profile")}
+                      >
+                        <Settings className="w-4 h-4 mr-2" />
+                        Profile
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  // Consultant Navigation
+                  <>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => router.push("/dashboard")}
+                    >
+                      <Home className="w-4 h-4 mr-2" />
+                      Dashboard
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => router.push("/dashboard/applications")}
+                    >
+                      <FileText className="w-4 h-4 mr-2" />
+                      My Applications
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => router.push("/dashboard/profile")}
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Profile
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => router.push("/jobs")}
+                    >
+                      <Building2 className="w-4 h-4 mr-2" />
+                      Browse Jobs
+                    </Button>
+                  </>
+                )}
                 <div className="pt-4 border-t">
                   <Button
                     variant="ghost"
