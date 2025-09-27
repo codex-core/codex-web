@@ -109,7 +109,7 @@ Submitted: ${new Date().toLocaleString()}
 
     // Send email using AWS SES
     const sendEmailCommand = new SendEmailCommand({
-      Source: process.env.SES_FROM_EMAIL,
+      Source: 'info@codexstudios.io',
       Destination: {
         ToAddresses: ['info@codexstudios.io'],
       },
@@ -182,7 +182,7 @@ Submitted: ${new Date().toLocaleString()}
     `;
 
     const confirmationEmailCommand = new SendEmailCommand({
-      Source: process.env.SES_FROM_EMAIL,
+      Source: 'info@codexstudios.io',
       Destination: {
         ToAddresses: [email],
       },
