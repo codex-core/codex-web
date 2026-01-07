@@ -1,35 +1,38 @@
+"use client";
+
 import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { 
-  Users, 
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  ArrowLeft,
+  Users,
   User,
-  Briefcase, 
-  FileText, 
-  Filter,
+  FileText,
   Download,
   Eye,
-  ChevronRight,
-  Calendar,
+  Search,
+  Filter,
   MapPin,
+  Calendar,
   DollarSign,
   Clock,
   CheckCircle,
   XCircle,
   AlertCircle,
-  Search,
-  X,
-  Phone,
-  Globe,
-  Github,
-  Linkedin,
   Mail,
-  Shield
+  Phone,
+  Linkedin,
+  Github,
+  Globe,
+  Shield,
+  Briefcase,
 } from "lucide-react";
+import Link from "next/link";
 
 interface Job {
   jobId: string;
@@ -68,16 +71,6 @@ interface Applicant {
   coverLetter?: string;
 }
 
-interface Resume {
-  resumeId: string;
-  fileName: string;
-  uploadedAt: string;
-  s3Key: string;
-  isDefault: boolean;
-  fileSize?: number;
-  fileType?: string;
-}
-
 interface UserProfileData {
   userId: string;
   email: string;
@@ -98,65 +91,83 @@ interface UserProfileData {
   isRegisteredUser?: boolean;
 }
 
-interface AdminDashboardProps {
-  userProfile: any;
+interface Resume {
+  resumeId: string;
+  fileName: string;
+  uploadedAt: string;
+  s3Key: string;
+  isDefault: boolean;
+  fileSize?: number;
+  fileType?: string;
 }
 
-export default function AdminDashboard({ userProfile }: AdminDashboardProps) {
-  const [jobs, setJobs] = useState<Job[]>([]);
+export default function JobDetailsPage() {
+  const params = useParams();
+  const router = useRouter();
+  const jobId = params.jobId as string;
+
+  const [job, setJob] = useState<Job | null>(null);
   const [applicants, setApplicants] = useState<Applicant[]>([]);
-  const [selectedJobId, setSelectedJobId] = useState<string>("all");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [roleFilter, setRoleFilter] = useState<string>("all");
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [filteredApplicants, setFilteredApplicants] = useState<Applicant[]>([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<'jobs' | 'applicants'>('jobs');
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
+  // Profile modal state
   const [selectedProfile, setSelectedProfile] = useState<UserProfileData | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
 
   useEffect(() => {
-    fetchJobs();
-    fetchApplicants();
-  }, []);
+    if (jobId) {
+      fetchJobDetails();
+      fetchJobApplicants();
+    }
+  }, [jobId]);
 
-  const fetchJobs = async () => {
+  useEffect(() => {
+    // Filter applicants based on search and status
+    let filtered = applicants.filter(applicant => {
+      const matchesStatus = statusFilter === "all" || applicant.status === statusFilter;
+      const matchesSearch = searchTerm === "" ||
+        `${applicant.firstName} ${applicant.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        applicant.email.toLowerCase().includes(searchTerm.toLowerCase());
+
+      return matchesStatus && matchesSearch;
+    });
+
+    setFilteredApplicants(filtered);
+  }, [applicants, statusFilter, searchTerm]);
+
+  const fetchJobDetails = async () => {
     try {
-      const response = await fetch('/api/admin/jobs');
+      const response = await fetch(`/api/admin/jobs/${jobId}`);
       if (response.ok) {
         const data = await response.json();
-        setJobs(data.jobs || []);
+        setJob(data.job);
+      } else {
+        console.error('Failed to fetch job details');
       }
     } catch (error) {
-      console.error('Error fetching jobs:', error);
+      console.error('Error fetching job details:', error);
     }
   };
 
-  const fetchApplicants = async () => {
+  const fetchJobApplicants = async () => {
     try {
-      const response = await fetch('/api/admin/applicants');
+      const response = await fetch(`/api/admin/jobs/${jobId}/applicants`);
       if (response.ok) {
         const data = await response.json();
         setApplicants(data.applicants || []);
+      } else {
+        console.error('Failed to fetch job applicants');
       }
     } catch (error) {
-      console.error('Error fetching applicants:', error);
+      console.error('Error fetching job applicants:', error);
     } finally {
       setLoading(false);
     }
   };
-
-  const filteredApplicants = applicants.filter(applicant => {
-    const matchesJob = selectedJobId === "all" || applicant.jobId === selectedJobId;
-    const matchesStatus = statusFilter === "all" || applicant.status === statusFilter;
-    const matchesRole = roleFilter === "all" || applicant.jobTitle.toLowerCase().includes(roleFilter.toLowerCase());
-    const matchesSearch = searchTerm === "" || 
-      `${applicant.firstName} ${applicant.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      applicant.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      applicant.jobTitle.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    return matchesJob && matchesStatus && matchesRole && matchesSearch;
-  });
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -178,9 +189,9 @@ export default function AdminDashboard({ userProfile }: AdminDashboardProps) {
   };
 
   const getJobStatusBadge = (status: string) => {
-    const variant = status === 'open' ? 'default' : 
-                   status === 'closed' ? 'destructive' : 
-                   status === 'paused' ? 'secondary' : 'outline';
+    const variant = status === 'open' ? 'default' :
+      status === 'closed' ? 'destructive' :
+        status === 'paused' ? 'secondary' : 'outline';
     return <Badge variant={variant}>{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>;
   };
 
@@ -188,12 +199,13 @@ export default function AdminDashboard({ userProfile }: AdminDashboardProps) {
     const exportData = filteredApplicants.map(applicant => ({
       Name: `${applicant.firstName} ${applicant.lastName}`,
       Email: applicant.email,
-      Position: applicant.jobTitle,
       Status: applicant.status,
       'Applied Date': new Date(applicant.appliedAt).toLocaleDateString(),
       Location: applicant.location || 'Not specified',
       Experience: applicant.experience || 'Not specified',
-      Skills: applicant.skills?.join(', ') || 'Not specified'
+      Skills: applicant.skills?.join(', ') || 'Not specified',
+      Phone: applicant.phone || 'Not provided',
+      LinkedIn: applicant.linkedinUrl || 'Not provided'
     }));
 
     const csv = [
@@ -205,21 +217,22 @@ export default function AdminDashboard({ userProfile }: AdminDashboardProps) {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `applicants-export-${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `${job?.title}-applicants-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
   };
 
-  const printApplicants = () => {
+  const printReport = () => {
     const printContent = `
       <html>
         <head>
-          <title>Candidate Report</title>
+          <title>${job?.title} - Applicant Report</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { color: #333; border-bottom: 2px solid #333; padding-bottom: 10px; }
+            .job-info { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
             th { background-color: #f5f5f5; font-weight: bold; }
@@ -233,18 +246,24 @@ export default function AdminDashboard({ userProfile }: AdminDashboardProps) {
           </style>
         </head>
         <body>
-          <h1>Candidate Report</h1>
-          <p>Generated on: ${new Date().toLocaleDateString()}</p>
-          <p>Total Candidates: ${filteredApplicants.length}</p>
+          <h1>${job?.title} - Applicant Report</h1>
+          <div class="job-info">
+            <p><strong>Company:</strong> ${job?.company}</p>
+            <p><strong>Location:</strong> ${job?.location}</p>
+            <p><strong>Job Type:</strong> ${job?.jobType}</p>
+            <p><strong>Status:</strong> ${job?.status}</p>
+            <p><strong>Total Applicants:</strong> ${filteredApplicants.length}</p>
+            <p><strong>Generated on:</strong> ${new Date().toLocaleDateString()}</p>
+          </div>
           <table>
             <thead>
               <tr>
                 <th>Name</th>
                 <th>Email</th>
-                <th>Position</th>
                 <th>Status</th>
                 <th>Applied Date</th>
                 <th>Location</th>
+                <th>Experience</th>
               </tr>
             </thead>
             <tbody>
@@ -252,10 +271,10 @@ export default function AdminDashboard({ userProfile }: AdminDashboardProps) {
                 <tr>
                   <td>${applicant.firstName} ${applicant.lastName}</td>
                   <td>${applicant.email}</td>
-                  <td>${applicant.jobTitle}</td>
                   <td><span class="status status-${applicant.status}">${applicant.status.toUpperCase()}</span></td>
                   <td>${new Date(applicant.appliedAt).toLocaleDateString()}</td>
                   <td>${applicant.location || 'Not specified'}</td>
+                  <td>${applicant.experience || 'Not specified'}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -276,21 +295,21 @@ export default function AdminDashboard({ userProfile }: AdminDashboardProps) {
   const handleViewProfile = async (applicant: Applicant) => {
     setProfileLoading(true);
     setShowProfileModal(true);
-    
+
     try {
       // First check if the applicant is a registered user in our system
       const userCheckResponse = await fetch(`/api/users/check?email=${encodeURIComponent(applicant.email)}`);
-      
+
       if (userCheckResponse.ok) {
         const userData = await userCheckResponse.json();
-        
+
         if (userData.exists) {
           // User is registered - fetch their full profile
           const profileResponse = await fetch(`/api/users/${userData.user.userId}`);
           if (profileResponse.ok) {
             const profileData = await profileResponse.json();
             const userProfile = profileData.user;
-            
+
             setSelectedProfile({
               ...userProfile,
               isRegisteredUser: true,
@@ -360,30 +379,30 @@ export default function AdminDashboard({ userProfile }: AdminDashboardProps) {
     try {
       // Check if user is registered and has uploaded resumes
       const userCheckResponse = await fetch(`/api/users/check?email=${encodeURIComponent(applicant.email)}`);
-      
+
       if (userCheckResponse.ok) {
         const userData = await userCheckResponse.json();
-        
+
         if (userData.exists) {
           // User is registered - fetch their resumes and download the default one
           const profileResponse = await fetch(`/api/users/${userData.user.userId}`);
           if (profileResponse.ok) {
             const profileData = await profileResponse.json();
             const userProfile = profileData.user;
-            
+
             if (userProfile.resumes && userProfile.resumes.length > 0) {
               // Find default resume or use the first one
               const defaultResume = userProfile.resumes.find((r: Resume) => r.isDefault) || userProfile.resumes[0];
-              
+
               // Get presigned URL for download
               const downloadResponse = await fetch(`/api/users/${userData.user.userId}/resumes/${defaultResume.resumeId}/download`);
-              
+
               if (!downloadResponse.ok) {
                 throw new Error('Failed to get download URL');
               }
 
               const { downloadUrl } = await downloadResponse.json();
-              
+
               // Create a temporary link and click it to download
               const link = document.createElement('a');
               link.href = downloadUrl;
@@ -392,19 +411,19 @@ export default function AdminDashboard({ userProfile }: AdminDashboardProps) {
               document.body.appendChild(link);
               link.click();
               document.body.removeChild(link);
-              
+
               return;
             }
           }
         }
       }
-      
+
       // Fallback: If not a registered user or no resumes found, try to use the resumeKey as S3 key
       console.warn('User not registered or no resumes found, falling back to resumeKey');
       // You might want to implement a generic S3 download endpoint here
       // For now, we'll just show an error
       throw new Error('Resume not available for download');
-      
+
     } catch (error) {
       console.error('Error downloading resume:', error);
       // You could add a toast notification here
@@ -419,370 +438,273 @@ export default function AdminDashboard({ userProfile }: AdminDashboardProps) {
     }
   };
 
-  if (loading) {
+  const getStatusStats = () => {
+    return {
+      pending: filteredApplicants.filter(a => a.status === 'pending').length,
+      screening: filteredApplicants.filter(a => a.status === 'screening').length,
+      interview: filteredApplicants.filter(a => a.status === 'interview').length,
+      offer: filteredApplicants.filter(a => a.status === 'offer').length,
+      rejected: filteredApplicants.filter(a => a.status === 'rejected').length,
+      hired: filteredApplicants.filter(a => a.status === 'hired').length,
+    };
+  };
+
+  if (loading || !job) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
       </div>
     );
   }
 
+  const statusStats = getStatusStats();
+
   return (
     <div className="space-y-6">
-      {/* Admin Header */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage job postings and applications</p>
-        </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <Button
-            variant={view === 'jobs' ? 'default' : 'outline'}
-            onClick={() => setView('jobs')}
-            className="flex-1 sm:flex-none"
-          >
-            <Briefcase className="w-4 h-4 mr-2" />
-            Jobs
+        <div className="flex items-center gap-4">
+          <Link href="/admin">
+          <Button variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
           </Button>
-          <Button
-            variant={view === 'applicants' ? 'default' : 'outline'}
-            onClick={() => setView('applicants')}
-            className="flex-1 sm:flex-none"
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Applicants
+        </Link>
+
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold">{job.title}</h1>
+              {getJobStatusBadge(job.status)}
+            </div>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+              <span className="flex items-center gap-1">
+                <MapPin className="w-4 h-4" />
+                {job.company}
+              </span>
+              <span className="flex items-center gap-1">
+                <MapPin className="w-4 h-4" />
+                {job.location}
+              </span>
+              {job.salary && (
+                <span className="flex items-center gap-1">
+                  <DollarSign className="w-4 h-4" />
+                  {job.salary}
+                </span>
+              )}
+              <span className="flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                Created {new Date(job.createdAt).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={exportApplicants}>
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={printReport}>
+            <FileText className="h-4 w-4 mr-2" />
+            Print Report
           </Button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium leading-tight">Total Jobs</CardTitle>
-            <Briefcase className="w-4 h-4 text-blue-600 flex-shrink-0" />
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-xl sm:text-2xl font-bold">{jobs.length}</div>
-            <p className="text-xs text-gray-600 mt-1">
-              {jobs.filter(j => j.status === 'open').length} active
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium leading-tight">Total Applicants</CardTitle>
-            <Users className="w-4 h-4 text-green-600 flex-shrink-0" />
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-xl sm:text-2xl font-bold">{applicants.length}</div>
-            <p className="text-xs text-gray-600 mt-1">
-              {applicants.filter(a => a.status === 'pending').length} pending review
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium leading-tight">In Interview</CardTitle>
-            <FileText className="w-4 h-4 text-purple-600 flex-shrink-0" />
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-xl sm:text-2xl font-bold">
-              {applicants.filter(a => a.status === 'interview').length}
-            </div>
-            <p className="text-xs text-gray-600 mt-1">Active interviews</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium leading-tight">Hired</CardTitle>
-            <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-xl sm:text-2xl font-bold">
-              {applicants.filter(a => a.status === 'hired').length}
-            </div>
-            <p className="text-xs text-gray-600 mt-1">This month</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Jobs View */}
-      {view === 'jobs' && (
+      {/* Job Description Card */}
+      {job.description && (
         <Card>
           <CardHeader>
-            <CardTitle>Job Postings</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Briefcase className="h-5 w-5" />
+              Job Description
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {jobs.map((job) => (
-                <div
-                  key={job.jobId}
-                  className="flex flex-col sm:flex-row md:flex-row sm:items-center md:items-center sm:justify-between md:justify-between p-4 border rounded-lg hover:bg-gray-50 space-y-3 sm:space-y-0 md:space-y-0"
-                >
-                  <div className="flex-1 space-y-2">
-                    <div className="flex flex-col sm:flex-row md:flex-row sm:items-center md:items-center gap-2 sm:gap-3 md:gap-3">
-                      <h3 
-                        className="font-semibold text-base sm:text-lg md:text-lg cursor-pointer hover:text-blue-600 transition-colors"
-                        onClick={() => {
-                          // Navigate to job details page
-                          window.location.href = `/dashboard/jobs/${job.jobId}`;
-                        }}
-                      >
-                        {job.title}
-                      </h3>
-                      {getJobStatusBadge(job.status)}
-                    </div>
-                    
-                    {/* Mobile: Stack info vertically, Tablet+: Keep horizontal */}
-                    <div className="grid grid-cols-1 sm:flex md:flex sm:items-center md:items-center gap-2 sm:gap-4 md:gap-4 text-sm text-gray-600">
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3 flex-shrink-0" />
-                        <span className="truncate">{job.company}</span>
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3 flex-shrink-0" />
-                        <span className="truncate">{job.location}</span>
-                      </span>
-                      {job.salary && (
-                        <span className="flex items-center gap-1">
-                          <DollarSign className="w-3 h-3 flex-shrink-0" />
-                          <span className="truncate">{job.salary}</span>
-                        </span>
-                      )}
-                      <span className="flex items-center gap-1">
-                        <Users className="w-3 h-3 flex-shrink-0" />
-                        <span>{job.applicantCount} applicants</span>
-                      </span>
+            <p className="text-gray-700 whitespace-pre-wrap">{job.description}</p>
+            {job.skills && job.skills.length > 0 && (
+              <div className="mt-4">
+                <h4 className="font-medium mb-2">Required Skills:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {job.skills.map((skill, index) => (
+                    <Badge key={index} variant="secondary">{skill}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold">{filteredApplicants.length}</div>
+            <p className="text-xs text-gray-600">Total Applicants</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-yellow-600">{statusStats.pending}</div>
+            <p className="text-xs text-gray-600">Pending</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-blue-600">{statusStats.screening}</div>
+            <p className="text-xs text-gray-600">Screening</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-purple-600">{statusStats.interview}</div>
+            <p className="text-xs text-gray-600">Interview</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-green-600">{statusStats.offer}</div>
+            <p className="text-xs text-gray-600">Offers</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-green-700">{statusStats.hired}</div>
+            <p className="text-xs text-gray-600">Hired</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Applicants List */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+            <CardTitle>Applicants ({filteredApplicants.length})</CardTitle>
+          </div>
+
+          {/* Filters */}
+          <div className="space-y-3 mt-4">
+            {/* Search */}
+            <div className="flex items-center gap-2">
+              <Search className="w-4 h-4 text-gray-500" />
+              <Input
+                placeholder="Search applicants..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1"
+              />
+            </div>
+
+            {/* Status filter */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="screening">Screening</SelectItem>
+                  <SelectItem value="interview">Interview</SelectItem>
+                  <SelectItem value="offer">Offer</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="hired">Hired</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {filteredApplicants.map((applicant) => (
+              <div
+                key={applicant.applicationId}
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg hover:bg-gray-50 space-y-3 sm:space-y-0"
+              >
+                <div className="flex-1 space-y-2">
+                  <div className="flex flex-col xs:flex-row xs:items-center gap-2 xs:gap-3">
+                    <h3 className="font-semibold text-base">
+                      {applicant.firstName} {applicant.lastName}
+                    </h3>
+                    <div className="flex items-center gap-1">
+                      {getStatusIcon(applicant.status)}
+                      <Badge variant="secondary" className="text-xs">{applicant.status}</Badge>
                     </div>
                   </div>
-                  
-                  {/* Mobile: Full width button, Tablet+: Normal button */}
-                  <div className="flex-shrink-0 flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full sm:w-auto md:w-auto"
-                      onClick={() => {
-                        setSelectedJobId(job.jobId);
-                        setView('applicants');
-                      }}
-                    >
-                      <Eye className="w-4 h-4 mr-2" />
-                      <span className="sm:inline md:inline">View Applicants</span>
-                    </Button>
+
+                  <div className="grid grid-cols-1 xs:grid-cols-2 sm:flex sm:items-center gap-1 sm:gap-4 text-sm text-gray-600">
+                    <span className="truncate">{applicant.email}</span>
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      Applied {new Date(applicant.appliedAt).toLocaleDateString()}
+                    </span>
+                    {applicant.location && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {applicant.location}
+                      </span>
+                    )}
+                  </div>
+
+                  {applicant.skills && applicant.skills.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {applicant.skills.slice(0, 3).map((skill, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {skill}
+                        </Badge>
+                      ))}
+                      {applicant.skills.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{applicant.skills.length - 3} more
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  {applicant.resumeKey && (
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="w-full sm:w-auto md:w-auto"
-                      onClick={() => {
-                        // Navigate to job details page
-                        window.location.href = `/dashboard/jobs/${job.jobId}`;
-                      }}
+                      onClick={() => handleDownloadResume(applicant)}
+                      title="Download Resume"
                     >
-                      <ChevronRight className="w-4 h-4" />
-                      <span className="sm:hidden md:hidden">Details</span>
+                      <Download className="w-4 h-4" />
                     </Button>
-                  </div>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleViewProfile(applicant)}
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    View Profile
+                  </Button>
                 </div>
-              ))}
-              
-              {jobs.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  <Briefcase className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>No job postings found.</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Applicants View */}
-      {view === 'applicants' && (
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-              <CardTitle className="text-lg sm:text-xl">Applicants ({filteredApplicants.length})</CardTitle>
-              <div className="flex gap-2 w-full sm:w-auto">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={exportApplicants}
-                  className="flex-1 sm:flex-none"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  <span className="hidden xs:inline">Export CSV</span>
-                  <span className="xs:hidden">CSV</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={printApplicants}
-                  className="flex-1 sm:flex-none"
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  <span className="hidden xs:inline">Print Report</span>
-                  <span className="xs:hidden">Print</span>
-                </Button>
               </div>
-            </div>
+            ))}
 
-            {/* Filters */}
-            <div className="space-y-3 mt-4">
-              {/* Search - Full width on mobile */}
-              <div className="flex items-center gap-2 w-full">
-                <Search className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                <Input
-                  placeholder="Search applicants..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="flex-1"
-                />
+            {filteredApplicants.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No applicants found for this job.</p>
               </div>
-              
-              {/* Filter dropdowns - Grid layout on mobile */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Select value={selectedJobId} onValueChange={setSelectedJobId}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Filter by job" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Jobs</SelectItem>
-                    {jobs.map((job) => (
-                      <SelectItem key={job.jobId} value={job.jobId}>
-                        {job.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="screening">Screening</SelectItem>
-                    <SelectItem value="interview">Interview</SelectItem>
-                    <SelectItem value="offer">Offer</SelectItem>
-                    <SelectItem value="rejected">Rejected</SelectItem>
-                    <SelectItem value="hired">Hired</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={roleFilter} onValueChange={setRoleFilter}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Roles</SelectItem>
-                    <SelectItem value="engineer">Engineer</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
-                    <SelectItem value="analyst">Analyst</SelectItem>
-                    <SelectItem value="consultant">Consultant</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {filteredApplicants.map((applicant) => (
-                <div
-                  key={applicant.applicationId}
-                  className="flex flex-col sm:flex-row md:flex-row sm:items-center md:items-center sm:justify-between md:justify-between p-4 border rounded-lg hover:bg-gray-50 space-y-3 sm:space-y-0 md:space-y-0"
-                >
-                  <div className="flex-1 space-y-2">
-                    <div className="flex flex-col xs:flex-row xs:items-center gap-2 xs:gap-3">
-                      <h3 className="font-semibold text-base">
-                        {applicant.firstName} {applicant.lastName}
-                      </h3>
-                      <div className="flex items-center gap-1">
-                        {getStatusIcon(applicant.status)}
-                        <Badge variant="secondary" className="text-xs">{applicant.status}</Badge>
-                      </div>
-                    </div>
-                    
-                    {/* Mobile: Stack info vertically, Tablet+: Keep horizontal */}
-                    <div className="grid grid-cols-1 xs:grid-cols-2 sm:flex md:flex sm:items-center md:items-center gap-1 sm:gap-4 md:gap-4 text-sm text-gray-600">
-                      <span className="truncate">{applicant.email}</span>
-                      <span className="flex items-center gap-1">
-                        <Briefcase className="w-3 h-3 flex-shrink-0" />
-                        <span className="truncate">{applicant.jobTitle}</span>
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3 flex-shrink-0" />
-                        <span>Applied {new Date(applicant.appliedAt).toLocaleDateString()}</span>
-                      </span>
-                      {applicant.location && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3 flex-shrink-0" />
-                          <span className="truncate">{applicant.location}</span>
-                        </span>
-                      )}
-                    </div>
-                    
-                    {/* Skills */}
-                    {applicant.skills && applicant.skills.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {applicant.skills.slice(0, 3).map((skill, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {skill}
-                          </Badge>
-                        ))}
-                        {applicant.skills.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{applicant.skills.length - 3} more
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Action buttons - Full width on mobile */}
-                  <div className="flex gap-2 w-full sm:w-auto md:w-auto">
-                    {applicant.resumeKey && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleDownloadResume(applicant)}
-                        title="Download Resume"
-                        className="flex-1 sm:flex-none md:flex-none"
-                      >
-                        <Download className="w-4 h-4 sm:mr-0 md:mr-0" />
-                        <span className="ml-2 sm:hidden md:hidden">Resume</span>
-                      </Button>
-                    )}
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleViewProfile(applicant)}
-                      className="flex-1 sm:flex-none md:flex-none"
-                    >
-                      <Eye className="w-4 h-4 mr-2" />
-                      <span className="sm:inline md:inline">View Profile</span>
-                    </Button>
-                  </div>
-                </div>
-              ))}
-
-              {filteredApplicants.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>No applicants found matching your filters.</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Profile Modal */}
+      {/* Profile Modal - Same as AdminDashboard */}
       <Dialog open={showProfileModal} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="overflow-y-auto lg:min-w-[800px] max-w-3xl max-h-[80vh]">
           <DialogHeader>
@@ -790,7 +712,7 @@ export default function AdminDashboard({ userProfile }: AdminDashboardProps) {
               {profileLoading ? 'Loading Profile...' : `${selectedProfile?.firstName} ${selectedProfile?.lastName}`}
             </DialogTitle>
           </DialogHeader>
-          
+
           {profileLoading ? (
             <div className="p-6 flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -873,9 +795,9 @@ export default function AdminDashboard({ userProfile }: AdminDashboardProps) {
                       <div>
                         <span className="font-medium">LinkedIn:</span>
                         <p className="text-blue-600 hover:underline">
-                          <a 
-                            href={selectedProfile.linkedinUrl} 
-                            target="_blank" 
+                          <a
+                            href={selectedProfile.linkedinUrl}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2"
                           >
@@ -889,9 +811,9 @@ export default function AdminDashboard({ userProfile }: AdminDashboardProps) {
                       <div>
                         <span className="font-medium">GitHub:</span>
                         <p className="text-blue-600 hover:underline">
-                          <a 
-                            href={selectedProfile.githubUrl} 
-                            target="_blank" 
+                          <a
+                            href={selectedProfile.githubUrl}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2"
                           >
@@ -905,9 +827,9 @@ export default function AdminDashboard({ userProfile }: AdminDashboardProps) {
                       <div>
                         <span className="font-medium">Portfolio:</span>
                         <p className="text-blue-600 hover:underline">
-                          <a 
-                            href={selectedProfile.portfolioUrl} 
-                            target="_blank" 
+                          <a
+                            href={selectedProfile.portfolioUrl}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2"
                           >
@@ -991,8 +913,8 @@ export default function AdminDashboard({ userProfile }: AdminDashboardProps) {
                                 </span>
                               </div>
                             </div>
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               onClick={() => {
                                 // Use the existing download logic

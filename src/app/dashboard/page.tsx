@@ -203,10 +203,10 @@ export default function DashboardPage() {
     );
   }
 
-  // Render admin dashboard for admin users
-  if (userProfile?.role === 'admin') {
-    return <AdminDashboard userProfile={userProfile} />;
-  }
+  // // Render admin dashboard for admin users
+  // if (userProfile?.role === 'admin') {
+  //   return <AdminDashboard userProfile={userProfile} />;
+  // }
 
   return (
     <div className="space-y-6">

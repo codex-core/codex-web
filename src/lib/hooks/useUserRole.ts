@@ -13,7 +13,7 @@ interface User {
 export function useUserRole() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const { tokens, signingInStatus } = usePasswordless();
+  const { tokens, signingInStatus, signInStatus} = usePasswordless();
   
   const isAuthenticated = (
     signingInStatus === 'SIGNED_IN_WITH_LINK' || 
@@ -23,7 +23,8 @@ export function useUserRole() {
   ) && !!tokens?.idToken;
 
   useEffect(() => {
-    if (!isAuthenticated) {
+
+    if (!isAuthenticated && signInStatus !== 'CHECKING') {
       setUser(null);
       setLoading(false);
       return;

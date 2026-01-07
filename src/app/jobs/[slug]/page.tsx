@@ -19,12 +19,12 @@ import {
   CheckCircle,
   ArrowLeft,
   Share2,
-  Bookmark
+  Bookmark,
+  Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { EnhancedJobRole } from '@/lib/types/enhanced-job';
-import { getJobBySlug } from '@/lib/jobs';
 
 export default function JobDetailPage() {
   const params = useParams();
@@ -32,15 +32,47 @@ export default function JobDetailPage() {
   
   const [job, setJob] = useState<EnhancedJobRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showApplicationForm, setShowApplicationForm] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
 
   useEffect(() => {
-    if (slug) {
-      const foundJob = getJobBySlug(slug);
-      setJob(foundJob);
-      setLoading(false);
-    }
+    const fetchJobBySlug = async () => {
+      if (!slug) return;
+      
+      try {
+        setLoading(true);
+        // Try to get job by ID first (if slug matches ID format)
+        let response = await fetch(`/api/jobs/${slug}`);
+        let data = await response.json();
+        
+        if (data.success) {
+          setJob(data.job);
+        } else {
+          // If direct lookup fails, get all jobs and find by slug
+          response = await fetch('/api/jobs?status=active');
+          data = await response.json();
+          
+          if (data.success) {
+            const foundJob = data.jobs.find((job: EnhancedJobRole) => job.slug === slug);
+            if (foundJob) {
+              setJob(foundJob);
+            } else {
+              setError('Job not found');
+            }
+          } else {
+            setError(data.error || 'Failed to fetch job');
+          }
+        }
+      } catch (err) {
+        setError('Failed to fetch job');
+        console.error('Error fetching job:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobBySlug();
   }, [slug]);
 
   // Handle application submission
@@ -94,28 +126,40 @@ export default function JobDetailPage() {
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading job details...</p>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (!job) {
+  if (error || !job) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto px-4 py-20">
           <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">Job Not Found</h1>
+            <h1 className="text-4xl font-bold mb-4">
+              {error ? 'Error Loading Job' : 'Job Not Found'}
+            </h1>
             <p className="text-muted-foreground mb-8">
-              The job you're looking for doesn't exist or has been removed.
+              {error || "The job you're looking for doesn't exist or has been removed."}
             </p>
-            <Button asChild>
-              <Link href="/jobs">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Jobs
-              </Link>
-            </Button>
+            <div className="flex gap-4 justify-center">
+              <Button asChild variant="outline">
+                <Link href="/jobs">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Jobs
+                </Link>
+              </Button>
+              {error && (
+                <Button onClick={() => window.location.reload()}>
+                  Try Again
+                </Button>
+              )}
+            </div>
           </div>
         </div>
         <Footer />

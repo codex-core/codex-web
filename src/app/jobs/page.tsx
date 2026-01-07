@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, MapPin, Clock, DollarSign, Search, Filter, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { ArrowRight, MapPin, Clock, DollarSign, Search, Filter, ChevronLeft, ChevronRight, Eye, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { getAllJobs, getFeaturedJobs, getJobCategories, getJobTypes } from "@/lib/jobs";
 import { EnhancedJobRole } from "@/lib/types/enhanced-job";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -25,22 +24,54 @@ export default function Jobs() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedJob, setSelectedJob] = useState<EnhancedJobRole | null>(null);
   const [showApplicationForm, setShowApplicationForm] = useState(false);
+  
+  // API state
+  const [allJobs, setAllJobs] = useState<EnhancedJobRole[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Get enhanced jobs data
-  const allJobs = getAllJobs();
-  const featuredJobs = getFeaturedJobs();
+  // Fetch jobs from API
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/jobs?status=active');
+        const data = await response.json();
+        
+        if (data.success) {
+          setAllJobs(data.jobs);
+        } else {
+          setError(data.error || 'Failed to fetch jobs');
+        }
+      } catch (err) {
+        setError('Failed to fetch jobs');
+        console.error('Error fetching jobs:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Get unique categories and types
-  const categories = getJobCategories();
-  const jobTypes = getJobTypes();
+    fetchJobs();
+  }, []);
 
-  // Filter jobs based on search and filters (combine both job sources)
+  // Get derived data from fetched jobs
+  const featuredJobs = useMemo(() => allJobs.filter(job => job.featured), [allJobs]);
+  const categories = useMemo(() => {
+    const uniqueCategories = [...new Set(allJobs.map(job => job.category))];
+    return uniqueCategories.sort();
+  }, [allJobs]);
+  const jobTypes = useMemo(() => {
+    const uniqueTypes = [...new Set(allJobs.map(job => job.type))];
+    return uniqueTypes.sort();
+  }, [allJobs]);
+
+  // Filter jobs based on search and filters
   const filteredJobs = useMemo(() => {
-    return allJobs.filter(job => {
+    return allJobs.filter((job: EnhancedJobRole) => {
       const matchesSearch = 
         job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         job.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+        job.skills.some((skill: string) => skill.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const matchesCategory = selectedCategory === "all" || job.category === selectedCategory;
       const matchesType = selectedType === "all" || job.type === selectedType;
@@ -300,7 +331,7 @@ export default function Jobs() {
                   className="px-3 py-1 rounded-md border bg-background text-sm"
                 >
                   <option value="all">All Categories</option>
-                  {categories.map(category => (
+                  {categories.map((category: string) => (
                     <option key={category} value={category}>{category}</option>
                   ))}
                 </select>
@@ -312,7 +343,7 @@ export default function Jobs() {
                   className="px-3 py-1 rounded-md border bg-background text-sm"
                 >
                   <option value="all">All Types</option>
-                  {jobTypes.map(type => (
+                  {jobTypes.map((type: string) => (
                     <option key={type} value={type} className="capitalize">{type}</option>
                   ))}
                 </select>
@@ -326,10 +357,32 @@ export default function Jobs() {
           </div>
         </div>
       </section>
-            {/* Jobs Grid */}
-            {paginatedJobs.length > 0 ? (
+      
+            {/* Loading State */}
+            {loading ? (
+              <div className="flex items-center justify-center py-16">
+                <div className="text-center">
+                  <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+                  <p className="text-muted-foreground">Loading opportunities...</p>
+                </div>
+              </div>
+            ) : error ? (
+              /* Error State */
+              <div className="flex items-center justify-center py-16">
+                <div className="text-center">
+                  <p className="text-red-600 mb-4">Failed to load jobs: {error}</p>
+                  <Button 
+                    onClick={() => window.location.reload()} 
+                    variant="outline"
+                  >
+                    Try Again
+                  </Button>
+                </div>
+              </div>
+            ) : paginatedJobs.length > 0 ? (
+            /* Jobs Grid */
               <div className="space-y-6">
-                {paginatedJobs.map((job, index) => (
+                {paginatedJobs.map((job: EnhancedJobRole, index: number) => (
                   <motion.div
                     key={job.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -389,7 +442,7 @@ export default function Jobs() {
                           <div>
                             <h4 className="font-semibold mb-2">Required Skills</h4>
                             <div className="flex flex-wrap gap-1">
-                              {job.skills.map((skill, skillIndex) => (
+                              {job.skills.map((skill: string, skillIndex: number) => (
                                 <Badge key={skillIndex} variant="secondary" className="text-xs">
                                   {skill}
                                 </Badge>

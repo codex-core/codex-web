@@ -15,6 +15,7 @@ import {
   Building2,
   MapPin
 } from "lucide-react";
+import Link from "next/link";
 
 interface Application {
   applicationId: string;
@@ -261,10 +262,12 @@ export default function ApplicationsPage() {
                         Resume
                       </Button>
                     )}
+                    <Link href={`/jobs/${app.jobTitle.replace(/\s+/g, '-').toLowerCase()}`}>
                     <Button variant="outline" size="sm">
                       <ExternalLink className="w-4 h-4 mr-1" />
                       View Job
                     </Button>
+                    </Link>
                   </div>
                 </div>
               </CardHeader>

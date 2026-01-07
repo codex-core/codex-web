@@ -29,14 +29,14 @@ export default function RoleGuard({
   useEffect(() => {
     // Don't redirect if still loading authentication or user data
     if (loading) return;
-
+    
     // If definitely not authenticated (after loading is complete), redirect to login
     if (!isAuthenticated) {
       console.log('User not authenticated, redirecting to login');
       router.push('/login');
       return;
     }
-
+    console.log('user has roles:', user?.role);
     // If authenticated but doesn't have required role, redirect to fallback
     if (isAuthenticated && !hasRequiredRole) {
       console.log('User authenticated but lacks required role, redirecting to fallback');
