@@ -127,7 +127,7 @@ export default function JobDetailsPage() {
 
   useEffect(() => {
     // Filter applicants based on search and status
-    let filtered = applicants.filter(applicant => {
+    const filtered = applicants.filter(applicant => {
       const matchesStatus = statusFilter === "all" || applicant.status === statusFilter;
       const matchesSearch = searchTerm === "" ||
         `${applicant.firstName} ${applicant.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
