@@ -481,6 +481,10 @@ export default function Jobs() {
                               className="flex-1"
                               onClick={(e) => {
                                 e.stopPropagation();
+                                if(job.applicationUrl){
+                                  window.open(job.applicationUrl, '_blank');
+                                  return;
+                                }
                                 setSelectedJob(job);
                                 setShowApplicationForm(true);
                               }}

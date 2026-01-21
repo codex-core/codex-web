@@ -46,7 +46,98 @@
     "expiresAt": "2026-07-06",
     "createdAt": "2026-01-06T10:00:00Z",
     "updatedAt": "2026-01-06T10:00:00Z",
-    "applicationUrl": "https://qjxl7b6l516.typeform.com/to/bFyzJB9n#job_id=systems-design-automation",
+    "status": "active"
+  },
+  {
+    "id": "senior-full-stack-lead-angular-node",
+    "slug": "senior-full-stack-lead-angular-node",
+    "title": "Senior Full Stack Lead Developer - Angular/Node",
+    "company": "Codex Consulting",
+    "category": "Engineering",
+    "location": "Remote (Arizona)",
+    "type": "contract",
+    "description": "Senior Full Stack developer who can lead the team and help developers offer solutions. Designing architecture, providing solutions, and supporting customer online accounts and upgrading online accounts. Strong experience with Angular and Node.js required, with preference for candidates from Vendor Payment, Auto Payment, or transactional experience companies.",
+    "htmlDescription": "<p><strong>About the Role</strong></p><p>We are seeking a Senior Full Stack developer who can lead the team and help developers offer solutions. This role involves designing architecture, providing solutions, and supporting customer online accounts and upgrading online accounts.</p><p><strong>Key Responsibilities</strong></p><ul><li>Lead development team and provide technical guidance</li><li>Design system architecture and provide technical solutions</li><li>Support customer online accounts and account upgrades</li><li>Mentor developers and offer technical solutions</li><li>Work with Angular and Node.js technology stack</li><li>Collaborate on payment and transactional systems</li></ul><p><strong>Required Skills</strong></p><ul><li>Senior-level experience in Full Stack development</li><li>Strong leadership and mentoring capabilities</li><li>Extensive experience with Angular framework</li><li>Proficient in Node.js development</li><li>Experience with online account systems</li><li>Architecture design experience</li></ul><p><strong>Preferred Experience</strong></p><ul><li>Background from Vendor Payment companies</li><li>Auto Payment systems experience</li><li>Transactional systems experience</li><li>Team leadership experience</li><li>Customer-facing application development</li></ul>",
+    "requirements": [
+      "Senior-level experience in Full Stack development",
+      "Strong leadership and mentoring capabilities",
+      "Extensive experience with Angular framework",
+      "Proficient in Node.js development",
+      "Experience with online account systems",
+      "Architecture design experience"
+    ],
+    "qualifications": [
+      "Lead development team and provide technical guidance",
+      "Design system architecture and provide technical solutions",
+      "Support customer online accounts and account upgrades",
+      "Mentor developers and offer technical solutions",
+      "Work with Angular and Node.js technology stack",
+      "Collaborate on payment and transactional systems"
+    ],
+    "preferredSkills": [
+      "Background from Vendor Payment companies",
+      "Auto Payment systems experience",
+      "Transactional systems experience",
+      "Team leadership experience",
+      "Customer-facing application development"
+    ],
+    "skills": ["Angular", "Node.js", "Full Stack", "Leadership", "Architecture Design", "Payment Systems", "JavaScript", "TypeScript", "Team Management"],
+    "experience": "Senior-level Full Stack development with leadership experience",
+    "benefits": ["Remote work flexibility", "Competitive hourly rates", "Arizona location preference", "Leadership opportunity", "Payment systems exposure"],
+    "salary": "$65/hr",
+    "priority": "high",
+    "featured": true,
+    "postedDate": "2026-01-21",
+    "expiresAt": "2026-07-21",
+    "createdAt": "2026-01-21T10:00:00Z",
+    "updatedAt": "2026-01-21T10:00:00Z",
+    "applicationUrl": "https://qjxl7b6l516.typeform.com/to/XewjX2LP",
+    "status": "active"
+  },
+  {
+    "id": "full-stack-angular-17",
+    "slug": "full-stack-angular-17",
+    "title": "Full Stack Developer - Angular 17+ Upgrade Specialist",
+    "company": "Codex Consulting",
+    "category": "Engineering",
+    "location": "Remote (Arizona)",
+    "type": "contract",
+    "description": "Full Stack developer with heavy experience in Angular and Node.js. This developer will upgrade the Angular platform to version 17, requiring experience with Angular 17 or above. Focus on platform upgrades, security updates, and modern Angular development practices.",
+    "htmlDescription": "<p><strong>About the Role</strong></p><p>We need a Full Stack developer with heavy experience in Angular and Node.js. This developer will be responsible for upgrading the Angular platform to version 17 and should have hands-on experience with Angular 17 or above.</p><p><strong>Key Responsibilities</strong></p><ul><li>Upgrade Angular platform to version 17 or above</li><li>Implement security updates and modern practices</li><li>Platform modernization and optimization</li><li>Work with Node.js backend systems</li><li>Ensure compatibility and performance during upgrades</li><li>Implement best practices for Angular 17+</li></ul><p><strong>Required Skills</strong></p><ul><li>Heavy experience with Angular framework</li><li>Experience with Angular 17 or above versions</li><li>Strong Node.js development skills</li><li>Platform upgrade experience</li><li>Security update implementation</li><li>Modern Angular development practices</li></ul><p><strong>Technical Focus</strong></p><ul><li>Angular 17+ migration and upgrade</li><li>Security updates and patches</li><li>Platform optimization</li><li>Code modernization</li><li>Performance improvements</li></ul>",
+    "requirements": [
+      "Heavy experience with Angular framework",
+      "Experience with Angular 17 or above versions",
+      "Strong Node.js development skills",
+      "Platform upgrade experience",
+      "Security update implementation",
+      "Modern Angular development practices"
+    ],
+    "qualifications": [
+      "Upgrade Angular platform to version 17 or above",
+      "Implement security updates and modern practices",
+      "Platform modernization and optimization",
+      "Work with Node.js backend systems",
+      "Ensure compatibility and performance during upgrades",
+      "Implement best practices for Angular 17+"
+    ],
+    "preferredSkills": [
+      "Angular 17+ migration experience",
+      "Security updates and patches",
+      "Platform optimization",
+      "Code modernization",
+      "Performance improvements"
+    ],
+    "skills": ["Angular 17+", "Node.js", "Platform Upgrades", "Security Updates", "JavaScript", "TypeScript", "Full Stack", "Migration", "Performance Optimization"],
+    "experience": "Heavy Angular experience with Angular 17+ upgrade expertise",
+    "benefits": ["Remote work flexibility", "Competitive hourly rates", "Arizona location preference", "Modern technology focus", "Platform modernization projects"],
+    "salary": "$65/hr",
+    "priority": "high",
+    "featured": true,
+    "postedDate": "2026-01-21",
+    "expiresAt": "2026-07-21",
+    "createdAt": "2026-01-21T10:00:00Z",
+    "updatedAt": "2026-01-21T10:00:00Z",
+    "applicationUrl": "https://qjxl7b6l516.typeform.com/to/XewjX2LP",
     "status": "active"
   }
 ]

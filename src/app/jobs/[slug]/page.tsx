@@ -248,7 +248,12 @@ export default function JobDetailPage() {
                       <Button 
                         size="lg" 
                         className="w-full"
-                        onClick={() => setShowApplicationForm(true)}
+                        onClick={() => {
+                          if(job.applicationUrl){
+                            window.open(job.applicationUrl, '_blank');
+                            return;
+                          }
+                          setShowApplicationForm(true)}}
                         disabled={isExpired}
                       >
                         {isExpired ? 'Application Closed' : 'Apply Now'}
