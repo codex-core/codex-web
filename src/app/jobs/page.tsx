@@ -427,6 +427,11 @@ export default function Jobs() {
                             <Button 
                               className="shrink-0"
                               onClick={(e) => {
+                                if(job.applicationUrl){
+                                  e.stopPropagation();
+                                  window.open(job.applicationUrl, '_blank');
+                                  return;
+                                }
                                 e.stopPropagation();
                                 setSelectedJob(job);
                                 setShowApplicationForm(true);
